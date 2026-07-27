@@ -10,8 +10,4 @@ button{border:0;border-radius:9px;padding:10px 14px;font-weight:700;cursor:point
 .name{font-size:19px;font-weight:800;margin-bottom:8px} .prices{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px} .chip{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;padding:7px 9px;font-weight:800}
 .note{white-space:pre-line;color:#475569} .check{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #fca5a5;border-radius:8px;background:#fff7f7} .check input{width:auto}
 @media(max-width:700px){.filters,.grid{grid-template-columns:1fr}.full{grid-column:auto}}
-
-.status{margin-top:12px;padding:9px 11px;border-radius:8px;background:#f1f5f9;color:#475569;font-weight:700}
-.status.ok{background:#ecfdf5;color:#047857}
-.status.error{background:#fef2f2;color:#b91c1c}
-button:disabled{opacity:.6;cursor:not-allowed}
+.status{margin-top:12px;padding:10px 12px;border-radius:9px;background:#f1f5f9;color:#475569;font-weight:700}.status.ok{background:#ecfdf5;color:#047857}.status.error{background:#fef2f2;color:#b91c1c}button:disabled{opacity:.6;cursor:not-allowed}
