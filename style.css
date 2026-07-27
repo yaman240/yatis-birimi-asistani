@@ -11,3 +11,17 @@ button{border:0;border-radius:9px;padding:10px 14px;font-weight:700;cursor:point
 .note{white-space:pre-line;color:#475569} .check{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #fca5a5;border-radius:8px;background:#fff7f7} .check input{width:auto}
 @media(max-width:700px){.filters,.grid{grid-template-columns:1fr}.full{grid-column:auto}}
 .status{margin-top:12px;padding:10px 12px;border-radius:9px;background:#f1f5f9;color:#475569;font-weight:700}.status.ok{background:#ecfdf5;color:#047857}.status.error{background:#fef2f2;color:#b91c1c}button:disabled{opacity:.6;cursor:not-allowed}
+
+.header-row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.auth-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.google-button{background:#2563eb;color:white}
+.hidden{display:none!important}
+.admin-status{margin-top:12px;padding:10px 12px;border-radius:9px;font-weight:700}
+.admin-status.visitor{background:#f1f5f9;color:#475569}
+.admin-status.admin{background:#ecfdf5;color:#047857}
+.admin-status.denied{background:#fff7ed;color:#c2410c}
+@media(max-width:700px){
+  .header-row{flex-direction:column}
+  .auth-actions{width:100%;justify-content:flex-start}
+  .auth-actions button{width:100%}
+}
