@@ -25,3 +25,6 @@ button{border:0;border-radius:9px;padding:10px 14px;font-weight:700;cursor:point
   .auth-actions{width:100%;justify-content:flex-start}
   .auth-actions button{width:100%}
 }
+
+
+.backup-panel{margin-top:22px;padding-top:18px;border-top:1px solid #e2e8f0}.backup-panel h3{margin:0 0 6px}

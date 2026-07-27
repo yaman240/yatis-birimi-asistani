@@ -1,4 +1,4 @@
-import { db, auth, googleProvider } from "./firebase.js?v=5";
+import { db, auth, googleProvider } from "./firebase.js?v=6";
 import { collection, deleteDoc, doc, onSnapshot, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
@@ -18,6 +18,9 @@ const adminPanel = document.getElementById("adminPanel");
 const loginButton = document.getElementById("loginButton");
 const logoutButton = document.getElementById("logoutButton");
 const saveButton = document.getElementById("saveButton");
+const backupButton = document.getElementById("backupButton");
+const restoreButton = document.getElementById("restoreButton");
+const restoreFile = document.getElementById("restoreFile");
 
 document.getElementById("search").addEventListener("input", render);
 document.getElementById("filter").addEventListener("change", render);
@@ -25,6 +28,9 @@ document.getElementById("clearButton").addEventListener("click", clearForm);
 saveButton.addEventListener("click", save);
 loginButton.addEventListener("click", login);
 logoutButton.addEventListener("click", logout);
+backupButton.addEventListener("click", downloadBackup);
+restoreButton.addEventListener("click", () => restoreFile.click());
+restoreFile.addEventListener("change", restoreBackup);
 
 function setConnectionStatus(message, type = "") {
   connectionStatus.textContent = message;
@@ -328,6 +334,70 @@ async function removeRecord(id) {
   } catch (error) {
     console.error(error);
     alert("Kayıt silinemedi.");
+  }
+}
+
+
+function backupFileName() {
+  const now = new Date();
+  const pad = value => String(value).padStart(2, "0");
+  return `yatis-birimi-yedek-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.json`;
+}
+
+function downloadBackup() {
+  if (!isAdmin) {
+    alert("Yedek almak için yönetici girişi gerekli.");
+    return;
+  }
+  const payload = { app: "Yatış Birimi Asistanı", version: 1, exportedAt: new Date().toISOString(), recordCount: data.length, records: data };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = backupFileName();
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function validateBackup(parsed) {
+  const records = Array.isArray(parsed) ? parsed : parsed?.records;
+  if (!Array.isArray(records)) throw new Error("Yedek dosyasında records listesi bulunamadı.");
+  return records.map((item, index) => {
+    if (!item || typeof item !== "object") throw new Error(`${index + 1}. kayıt geçersiz.`);
+    const normalised = normalise(item);
+    if (!normalised.name.trim()) throw new Error(`${index + 1}. kaydın işlem adı boş.`);
+    return normalised;
+  });
+}
+
+async function restoreBackup(event) {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file) return;
+  if (!isAdmin) {
+    alert("Yedek geri yüklemek için yönetici girişi gerekli.");
+    return;
+  }
+  try {
+    const records = validateBackup(JSON.parse(await file.text()));
+    const confirmed = confirm(`${records.length} kayıt Firestore'a aktarılacak.\n\nAynı kimliğe sahip kayıtlar güncellenecek, diğer mevcut kayıtlar silinmeyecek.\n\nDevam edilsin mi?`);
+    if (!confirmed) return;
+    restoreButton.disabled = true;
+    restoreButton.textContent = "Geri yükleniyor...";
+    for (let start = 0; start < records.length; start += 450) {
+      const batch = writeBatch(db);
+      records.slice(start, start + 450).forEach(item => batch.set(doc(db, COLLECTION_NAME, String(item.id)), item));
+      await batch.commit();
+    }
+    alert(`${records.length} kayıt başarıyla geri yüklendi.`);
+  } catch (error) {
+    console.error(error);
+    alert(`Yedek geri yüklenemedi: ${error.message || "Dosya geçersiz."}`);
+  } finally {
+    restoreButton.disabled = false;
+    restoreButton.textContent = "⬆ Yedekten Geri Yükle";
   }
 }
 
