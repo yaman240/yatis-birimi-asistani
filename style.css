@@ -1,0 +1,17 @@
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#1f2937}
+.wrap{max-width:1000px;margin:24px auto;padding:0 14px} .box{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 4px 16px #0001}
+h1{margin:0 0 6px} .muted{color:#64748b} .filters{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;font-size:15px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px} .full{grid-column:1/-1} label{display:block;font-weight:700;margin:4px 0 6px}
+button{border:0;border-radius:9px;padding:10px 14px;font-weight:700;cursor:pointer} .primary{background:#2563eb;color:white} .secondary{background:#e2e8f0} .danger{background:#dc2626;color:white}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px} .group-title{background:#eff6ff;border-left:5px solid #2563eb;padding:10px 12px;border-radius:8px;margin:20px 0 10px}
+.card{border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:10px} .cash{border:3px solid #dc2626;background:#fff7f7}
+.cashwarn{background:#dc2626;color:white;text-align:center;font-weight:900;padding:8px;border-radius:7px;margin-bottom:9px}
+.name{font-size:19px;font-weight:800;margin-bottom:8px} .prices{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px} .chip{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;padding:7px 9px;font-weight:800}
+.note{white-space:pre-line;color:#475569} .check{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #fca5a5;border-radius:8px;background:#fff7f7} .check input{width:auto}
+@media(max-width:700px){.filters,.grid{grid-template-columns:1fr}.full{grid-column:auto}}
+
+.status{margin-top:12px;padding:9px 11px;border-radius:8px;background:#f1f5f9;color:#475569;font-weight:700}
+.status.ok{background:#ecfdf5;color:#047857}
+.status.error{background:#fef2f2;color:#b91c1c}
+button:disabled{opacity:.6;cursor:not-allowed}
