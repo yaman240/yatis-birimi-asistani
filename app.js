@@ -1,4 +1,4 @@
-import { db, auth, googleProvider } from "./firebase.js?v=6";
+import { db, auth, googleProvider } from "./firebase.js?v=7";
 import { collection, deleteDoc, doc, onSnapshot, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
@@ -17,6 +17,9 @@ const adminStatus = document.getElementById("adminStatus");
 const adminPanel = document.getElementById("adminPanel");
 const loginButton = document.getElementById("loginButton");
 const logoutButton = document.getElementById("logoutButton");
+const newRecordButton = document.getElementById("newRecordButton");
+const closePanelButton = document.getElementById("closePanelButton");
+const formTitle = document.getElementById("formTitle");
 const saveButton = document.getElementById("saveButton");
 const backupButton = document.getElementById("backupButton");
 const restoreButton = document.getElementById("restoreButton");
@@ -24,10 +27,12 @@ const restoreFile = document.getElementById("restoreFile");
 
 document.getElementById("search").addEventListener("input", render);
 document.getElementById("filter").addEventListener("change", render);
-document.getElementById("clearButton").addEventListener("click", clearForm);
+document.getElementById("clearButton").addEventListener("click", closeAdminPanel);
 saveButton.addEventListener("click", save);
 loginButton.addEventListener("click", login);
 logoutButton.addEventListener("click", logout);
+newRecordButton.addEventListener("click", openNewRecordPanel);
+closePanelButton.addEventListener("click", closeAdminPanel);
 backupButton.addEventListener("click", downloadBackup);
 restoreButton.addEventListener("click", () => restoreFile.click());
 restoreFile.addEventListener("change", restoreBackup);
@@ -43,7 +48,8 @@ function updateAdminUi(user) {
   if (isAdmin) {
     adminStatus.textContent = `Yönetici modu • ${user.email}`;
     adminStatus.className = "admin-status admin";
-    adminPanel.classList.remove("hidden");
+    adminPanel.classList.add("hidden");
+    newRecordButton.classList.remove("hidden");
     loginButton.classList.add("hidden");
     logoutButton.classList.remove("hidden");
   } else {
@@ -52,6 +58,7 @@ function updateAdminUi(user) {
       : "Ziyaretçi modu • Kayıtlar yalnızca görüntülenebilir.";
     adminStatus.className = user ? "admin-status denied" : "admin-status visitor";
     adminPanel.classList.add("hidden");
+    newRecordButton.classList.add("hidden");
     loginButton.classList.remove("hidden");
     logoutButton.classList.add("hidden");
     clearForm();
@@ -168,6 +175,21 @@ onSnapshot(
     listElement.innerHTML = '<p class="muted">Veriler yüklenemedi.</p>';
   }
 );
+
+
+function openNewRecordPanel() {
+  if (!isAdmin) return;
+  clearForm(false);
+  formTitle.textContent = "Yeni Kayıt";
+  adminPanel.classList.remove("hidden");
+  adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  setTimeout(() => document.getElementById("clinic").focus(), 300);
+}
+
+function closeAdminPanel() {
+  clearForm(false);
+  adminPanel.classList.add("hidden");
+}
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -292,7 +314,7 @@ async function save() {
 
   try {
     await setDoc(doc(db, COLLECTION_NAME, String(item.id)), item);
-    clearForm();
+    closeAdminPanel();
   } catch (error) {
     console.error(error);
     alert("Kayıt Firebase'e kaydedilemedi.");
@@ -316,7 +338,9 @@ function edit(id) {
     document.getElementById(key).value = item[key] ?? "";
   });
   document.getElementById("cashOnly").checked = item.cashOnly;
-  adminPanel.scrollIntoView({ behavior: "smooth" });
+  formTitle.textContent = "Kaydı Düzenle";
+  adminPanel.classList.remove("hidden");
+  adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 async function removeRecord(id) {
@@ -401,9 +425,11 @@ async function restoreBackup(event) {
   }
 }
 
-function clearForm() {
+function clearForm(hidePanel = true) {
   editing = null;
   ["clinic", "name", "minPrice", "maxPrice", "sgkPrice", "privatePrice", "description"]
     .forEach(key => document.getElementById(key).value = "");
   document.getElementById("cashOnly").checked = false;
+  formTitle.textContent = "Yeni Kayıt";
+  if (hidePanel) adminPanel.classList.add("hidden");
 }

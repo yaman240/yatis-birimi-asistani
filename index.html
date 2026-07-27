@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Yatış Birimi Asistanı</title>
-<link rel="stylesheet" href="./style.css?v=6">
+<link rel="stylesheet" href="./style.css?v=7">
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#2563eb">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -18,6 +18,7 @@
         <div class="muted">Hasta bilgisi içermez. Ameliyat ve işlem fiyatlarını hızlıca bulur.</div>
       </div>
       <div class="auth-actions">
+        <button id="newRecordButton" class="primary hidden">➕ Yeni Kayıt</button>
         <button id="loginButton" class="google-button">🔐 Google ile Yönetici Girişi</button>
         <button id="logoutButton" class="secondary hidden">Çıkış Yap</button>
       </div>
@@ -35,7 +36,10 @@
   </div>
 
   <div id="adminPanel" class="box hidden">
-    <h2>Kayıt Ekle / Düzenle</h2>
+    <div class="panel-header">
+      <h2 id="formTitle">Yeni Kayıt</h2>
+      <button id="closePanelButton" class="secondary compact-button">✕ Kapat</button>
+    </div>
     <div class="grid">
       <div class="full"><label for="clinic">Poliklinik</label><input id="clinic" placeholder="Örn: Ortopedi"></div>
       <div class="full"><label for="name">Ameliyat / işlem adı</label><input id="name"></div>
@@ -48,7 +52,7 @@
     </div>
     <div class="actions">
       <button id="saveButton" class="primary">Kaydet</button>
-      <button id="clearButton" class="secondary">Temizle</button>
+      <button id="clearButton" class="secondary">İptal</button>
     </div>
 
     <div class="backup-panel">
@@ -62,12 +66,12 @@
     </div>
   </div>
 </div>
-<script type="module" src="./app.js?v=6"></script>
+<script type="module" src="./app.js?v=7"></script>
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./service-worker.js?v=6");
+      const registration = await navigator.serviceWorker.register("./service-worker.js?v=7");
       await registration.update();
     } catch (error) {
       console.error(error);
