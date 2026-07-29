@@ -1,4 +1,4 @@
-import { db, auth, googleProvider } from "./firebase.js?v=9";
+import { db, auth, googleProvider } from "./firebase.js?v=10";
 import { collection, deleteDoc, doc, onSnapshot, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
@@ -261,6 +261,21 @@ function prices(item) {
   return result.join("");
 }
 
+function clinicIcon(clinic) {
+  const name = String(clinic || "").toLocaleLowerCase("tr-TR");
+  if (name.includes("beyin")) return "🧠";
+  if (name.includes("kalp") || name.includes("damar")) return "♥";
+  if (name.includes("ortopedi")) return "🦴";
+  if (name.includes("kulak") || name === "kbb") return "👂";
+  if (name.includes("çocuk")) return "👶";
+  if (name.includes("kadın") || name.includes("doğum")) return "♀";
+  if (name.includes("üroloji")) return "◈";
+  if (name.includes("plastik")) return "✦";
+  if (name.includes("genel cerrahi")) return "✚";
+  if (name.includes("göz")) return "◉";
+  return "✚";
+}
+
 function updateFilter() {
   const filter = document.getElementById("filter");
   const current = filter.value;
@@ -291,22 +306,31 @@ function render() {
     Object.keys(groups)
       .sort((a, b) => a.localeCompare(b, "tr"))
       .map(clinic => `
-        <h3 class="group-title">${escapeHtml(clinic)} (${groups[clinic].length})</h3>
+        <div class="group-title">
+          <span class="group-icon">${clinicIcon(clinic)}</span>
+          <span class="group-name">${escapeHtml(clinic)}</span>
+          <span class="group-count">${groups[clinic].length} işlem</span>
+        </div>
+        <div class="card-grid">
         ${groups[clinic].map(item => `
-          <div class="card ${item.cashOnly ? "cash" : ""}">
+          <article class="card ${item.cashOnly ? "cash" : ""}">
             ${item.cashOnly ? '<div class="cashwarn">⚠ SADECE NAKİT ÖDEME</div>' : ""}
-            <div class="name">${escapeHtml(item.name)}</div>
+            <div class="card-top">
+              <div class="procedure-icon">${clinicIcon(item.clinic)}</div>
+              <div class="name">${escapeHtml(item.name)}</div>
+            </div>
             <div class="prices">${prices(item)}</div>
-            <div class="note">${escapeHtml(item.description)}</div>
+            ${item.description ? `<div class="note"><span class="note-label">Açıklama</span>${escapeHtml(item.description)}</div>` : ""}
             ${isAdmin ? `
-              <div class="actions">
-                <button class="secondary" data-edit="${item.id}">Düzenle</button>
+              <div class="actions card-actions">
+                <button class="secondary" data-edit="${item.id}">✎ Düzenle</button>
                 <button class="danger" data-delete="${item.id}">Sil</button>
               </div>` : ""}
-          </div>
+          </article>
         `).join("")}
+        </div>
       `)
-      .join("") || '<p class="muted">Kayıt bulunamadı.</p>';
+      .join("") || '<div class="empty-state"><div class="empty-icon">⌕</div><strong>Kayıt bulunamadı</strong><span>Arama kelimesini veya poliklinik seçimini değiştirin.</span></div>';
 
   if (isAdmin) {
     document.querySelectorAll("[data-edit]").forEach(button => {

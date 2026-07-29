@@ -4,18 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Yatış Birimi Asistanı</title>
-<link rel="stylesheet" href="./style.css?v=9">
+<link rel="stylesheet" href="./style.css?v=10">
 <link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#2563eb">
+<meta name="theme-color" content="#0f3d66">
 <link rel="apple-touch-icon" href="./icon-192.png">
 </head>
 <body>
 <div class="wrap">
   <div class="box">
     <div class="header-row">
-      <div>
-        <h1>Yatış Birimi Asistanı</h1>
-        <div class="muted">Hasta bilgisi içermez. Ameliyat ve işlem fiyatlarını hızlıca bulur.</div><div class="version-note">Üroloji, Kadın Doğum ve Plastik Cerrahi veri güncellemesi</div>
+      <div class="brand-block">
+        <div class="brand-icon" aria-hidden="true">✚</div>
+        <div>
+          <div class="eyebrow">HASTA YATIŞ VE FİYATLANDIRMA</div>
+          <h1>Yatış Birimi Asistanı</h1>
+          <div class="muted">Ameliyat ve işlem fiyatlarına hızlı, güvenli ve sade erişim.</div>
+        </div>
       </div>
       <div class="auth-actions">
         <button id="newRecordButton" class="primary hidden">➕ Yeni Kayıt</button>
@@ -27,12 +31,18 @@
     <div id="connectionStatus" class="status">Firebase bağlantısı kuruluyor...</div>
   </div>
 
-  <div class="box">
-    <div class="filters">
-      <input id="search" placeholder="Ameliyat veya işlem ara...">
-      <select id="filter"></select>
+  <div class="box content-box">
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow">HIZLI ARAMA</div>
+        <h2>İşlem ve fiyat listesi</h2>
+      </div>
     </div>
-    <div id="list"><p class="muted">Kayıtlar yükleniyor...</p></div>
+    <div class="filters">
+      <div class="search-wrap"><span class="search-icon">⌕</span><input id="search" placeholder="Ameliyat veya işlem ara..." autocomplete="off"></div>
+      <select id="filter" aria-label="Poliklinik seç"></select>
+    </div>
+    <div id="list"><p class="muted loading-state">Kayıtlar yükleniyor...</p></div>
   </div>
 
   <div id="adminPanel" class="box hidden">
@@ -66,12 +76,12 @@
     </div>
   </div>
 </div>
-<script type="module" src="./app.js?v=9"></script>
+<script type="module" src="./app.js?v=10"></script>
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./service-worker.js?v=9");
+      const registration = await navigator.serviceWorker.register("./service-worker.js?v=10");
       await registration.update();
     } catch (error) {
       console.error(error);
