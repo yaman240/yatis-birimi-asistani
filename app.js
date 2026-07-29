@@ -1,4 +1,4 @@
-import { db, auth, googleProvider } from "./firebase.js?v=7";
+import { db, auth, googleProvider } from "./firebase.js?v=8";
 import { collection, deleteDoc, doc, onSnapshot, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
@@ -6,10 +6,15 @@ const SEED = [{"clinic":"Ortopedi","name":"Kalça Protezi","sgkPrice":null,"priv
 const COLLECTION_NAME = "surgeryPrices";
 const ADMIN_EMAIL = "yaman615@gmail.com";
 
+const BRANCH_UPDATE_VERSION = "2026-07-29-v8";
+const BRANCH_SEED = [{"id":310001,"clinic":"Kalp ve Damar Cerrahisi","name":"Karotis Endarterektomi","minPrice":120000,"maxPrice":130000,"sgkPrice":null,"privatePrice":null,"description":"Sağ veya sol karotis arter için uygulanabilir. Doktor değerlendirmesine göre fiyat güncellenebilir.","cashOnly":false},{"id":310002,"clinic":"Kalp ve Damar Cerrahisi","name":"CABG (Koroner Arter Bypass Greftleme)","minPrice":120000,"maxPrice":160000,"sgkPrice":null,"privatePrice":null,"description":"Greft sayısı, ek girişimler ve vaka özelliklerine göre fiyat değişebilir.","cashOnly":false},{"id":310003,"clinic":"Kalp ve Damar Cerrahisi","name":"EVLA (Endovenöz Lazer Ablasyon)","minPrice":110000,"maxPrice":130000,"sgkPrice":null,"privatePrice":null,"description":"Paket fiyatıdır. Taraf ve uygulanacak damar sayısına göre değerlendirilir.","cashOnly":false},{"id":310004,"clinic":"Kalp ve Damar Cerrahisi","name":"Periferik Anjiyografi","minPrice":35000,"maxPrice":45000,"sgkPrice":null,"privatePrice":null,"description":"Balon adet: 35.000 TL. Stent adet: 45.000 TL. Kullanılan adet ve ek sarflara göre toplam fiyat değişebilir.","cashOnly":false},{"id":310005,"clinic":"Kalp ve Damar Cerrahisi","name":"Femoro-Popliteal Bypass","minPrice":120000,"maxPrice":120000,"sgkPrice":null,"privatePrice":null,"description":"Greft ve vaka özelliklerine göre doktor değerlendirmesi gerekebilir.","cashOnly":true},{"id":310006,"clinic":"Kalp ve Damar Cerrahisi","name":"Embolektomi","minPrice":140000,"maxPrice":140000,"sgkPrice":null,"privatePrice":null,"description":"Damar bölgesi ve ek girişim ihtiyacına göre değerlendirilir.","cashOnly":true},{"id":310007,"clinic":"Kalp ve Damar Cerrahisi","name":"AVR (Aort Kapak Replasmanı)","minPrice":150000,"maxPrice":170000,"sgkPrice":null,"privatePrice":null,"description":"Protez kapak tipi ve ek girişimlere göre fiyat değişebilir.","cashOnly":false},{"id":310008,"clinic":"Kalp ve Damar Cerrahisi","name":"MVR (Mitral Kapak Replasmanı)","minPrice":150000,"maxPrice":170000,"sgkPrice":null,"privatePrice":null,"description":"Protez kapak tipi ve ek girişimlere göre fiyat değişebilir.","cashOnly":false},{"id":310009,"clinic":"Kalp ve Damar Cerrahisi","name":"MVR + AVR","minPrice":260000,"maxPrice":360000,"sgkPrice":null,"privatePrice":null,"description":"Kombine kapak cerrahisidir. Protez tipi ve ek girişimlere göre fiyat değişebilir.","cashOnly":false},{"id":320001,"clinic":"Beyin ve Sinir Cerrahisi","name":"TFESİ (Transforaminal Epidural Steroid Enjeksiyonu)","minPrice":22000,"maxPrice":35000,"sgkPrice":null,"privatePrice":null,"description":"Tek veya çok seviyeli uygulanabilir. İlaç, seviye ve sarf durumuna göre fiyat değişebilir.","cashOnly":false},{"id":320002,"clinic":"Beyin ve Sinir Cerrahisi","name":"Lomber Mikrodiskektomi (Tek Seviye)","minPrice":130000,"maxPrice":145000,"sgkPrice":null,"privatePrice":null,"description":"L3-4, L4-5 veya L5-S1 seviyelerinde uygulanabilir. Sağ veya sol taraf olması fiyatı değiştirmez. Tek seviye cerrahi için geçerlidir.","cashOnly":false},{"id":320003,"clinic":"Beyin ve Sinir Cerrahisi","name":"Lomber Mikrodiskektomi (Çift Seviye)","minPrice":230000,"maxPrice":270000,"sgkPrice":null,"privatePrice":null,"description":"Aynı seansta iki lomber seviyeye uygulanan mikrodiskektomi için geçerlidir.","cashOnly":false},{"id":320004,"clinic":"Beyin ve Sinir Cerrahisi","name":"Servikal Disk Cerrahisi (Tek Seviye)","minPrice":135000,"maxPrice":145000,"sgkPrice":null,"privatePrice":null,"description":"C3-4, C4-5, C5-6 veya C6-7 seviyelerinde uygulanabilir. Tek seviye cerrahi için geçerlidir.","cashOnly":false},{"id":320005,"clinic":"Beyin ve Sinir Cerrahisi","name":"Servikal Disk Cerrahisi (Çift Seviye)","minPrice":150000,"maxPrice":230000,"sgkPrice":null,"privatePrice":null,"description":"Aynı seansta iki servikal seviyeye uygulanan cerrahi için geçerlidir.","cashOnly":false},{"id":320006,"clinic":"Beyin ve Sinir Cerrahisi","name":"Vertebroplasti (Tek Seviye)","minPrice":120000,"maxPrice":145000,"sgkPrice":null,"privatePrice":null,"description":"Torakal veya lomber tek vertebra seviyesine uygulanan işlem için geçerlidir.","cashOnly":false},{"id":320007,"clinic":"Beyin ve Sinir Cerrahisi","name":"Vertebroplasti (Çoklu Seviye)","minPrice":170000,"maxPrice":230000,"sgkPrice":null,"privatePrice":null,"description":"İki veya daha fazla vertebra seviyesine uygulanan işlem için geçerlidir.","cashOnly":false},{"id":320008,"clinic":"Beyin ve Sinir Cerrahisi","name":"Spinal Stenoz Dekompresyonu","minPrice":190000,"maxPrice":320000,"sgkPrice":null,"privatePrice":null,"description":"Seviye sayısı, cerrahi teknik ve ek stabilizasyon ihtiyacına göre fiyat değişebilir.","cashOnly":false},{"id":320009,"clinic":"Beyin ve Sinir Cerrahisi","name":"Spondilolistezis Cerrahisi","minPrice":250000,"maxPrice":395000,"sgkPrice":null,"privatePrice":null,"description":"Seviye, füzyon ve implant ihtiyacına göre fiyat değişebilir.","cashOnly":false},{"id":320010,"clinic":"Beyin ve Sinir Cerrahisi","name":"Stabilizasyon + Füzyon","minPrice":285000,"maxPrice":450000,"sgkPrice":null,"privatePrice":null,"description":"Kullanılan implant sayısı, cerrahi seviye ve tekniğe göre fiyat değişebilir.","cashOnly":false},{"id":320011,"clinic":"Beyin ve Sinir Cerrahisi","name":"Laminektomi","minPrice":140000,"maxPrice":140000,"sgkPrice":null,"privatePrice":null,"description":"Tek seviye laminektomi için başlangıç fiyatıdır. Çoklu seviyelerde yeniden değerlendirilir.","cashOnly":false},{"id":320012,"clinic":"Beyin ve Sinir Cerrahisi","name":"Radyofrekans (RF)","minPrice":85000,"maxPrice":100000,"sgkPrice":null,"privatePrice":null,"description":"Ağrı tedavisine yönelik radyofrekans uygulamasıdır. Bölge ve seviye sayısına göre değişebilir.","cashOnly":false},{"id":320013,"clinic":"Beyin ve Sinir Cerrahisi","name":"Bel Enjeksiyonu","minPrice":32000,"maxPrice":32000,"sgkPrice":null,"privatePrice":null,"description":"Bel bölgesine yapılan enjeksiyon işlemleri için başlangıç fiyatıdır.","cashOnly":false},{"id":330001,"clinic":"KBB","name":"Septoplasti","minPrice":50000,"maxPrice":55000,"sgkPrice":null,"privatePrice":null,"description":"Septum deviasyonuna yönelik fonksiyonel burun cerrahisidir.","cashOnly":false},{"id":330002,"clinic":"KBB","name":"Septoplasti + Konka RF","minPrice":50000,"maxPrice":55000,"sgkPrice":null,"privatePrice":null,"description":"Septoplasti ile birlikte alt konkalara radyofrekans uygulamasını içerir.","cashOnly":false},{"id":330003,"clinic":"KBB","name":"Septoplasti + Konka Cerrahisi + Bülloza Rezeksiyonu","minPrice":75000,"maxPrice":75000,"sgkPrice":null,"privatePrice":null,"description":"Genişletilmiş fonksiyonel nazal cerrahi paketidir.","cashOnly":false},{"id":330004,"clinic":"KBB","name":"Fonksiyonel Septorinoplasti","minPrice":65000,"maxPrice":80000,"sgkPrice":null,"privatePrice":null,"description":"Fonksiyonel solunum problemi öncelikli septorinoplasti işlemidir.","cashOnly":false},{"id":330005,"clinic":"KBB","name":"Açık Teknik Rinoplasti","minPrice":80000,"maxPrice":90000,"sgkPrice":null,"privatePrice":null,"description":"Açık teknik estetik rinoplasti işlemidir.","cashOnly":false},{"id":330006,"clinic":"KBB","name":"Total Septal Rekonstrüksiyon (+ Gerekirse Kosta Grefti)","minPrice":200000,"maxPrice":200000,"sgkPrice":null,"privatePrice":null,"description":"İleri septal deformitelerde uygulanır. Gerekirse kosta grefti kullanılabilir.","cashOnly":false},{"id":330007,"clinic":"KBB","name":"Adenoidektomi","minPrice":40000,"maxPrice":40000,"sgkPrice":null,"privatePrice":null,"description":"Geniz eti ameliyatıdır.","cashOnly":false},{"id":330008,"clinic":"KBB","name":"Tonsillektomi","minPrice":50000,"maxPrice":50000,"sgkPrice":null,"privatePrice":null,"description":"Bademcik ameliyatıdır.","cashOnly":false},{"id":330009,"clinic":"KBB","name":"Adenotonsillektomi","minPrice":45000,"maxPrice":50000,"sgkPrice":null,"privatePrice":null,"description":"Adenoidektomi ve tonsillektominin aynı seansta uygulanmasıdır.","cashOnly":false},{"id":330010,"clinic":"KBB","name":"FESS (Endoskopik Sinüs Cerrahisi)","minPrice":55000,"maxPrice":90000,"sgkPrice":null,"privatePrice":null,"description":"Frontal, maksiller, etmoid veya sfenoid sinüslere uygulanabilir. Tutulan sinüs sayısına göre fiyat değişebilir.","cashOnly":false},{"id":330011,"clinic":"KBB","name":"Konka RF","minPrice":30000,"maxPrice":30000,"sgkPrice":null,"privatePrice":null,"description":"Alt konkalara radyofrekans ile küçültme uygulamasıdır.","cashOnly":false},{"id":330012,"clinic":"KBB","name":"Burun Kitle Eksizyonu","minPrice":30000,"maxPrice":40000,"sgkPrice":null,"privatePrice":null,"description":"Kitlenin yerleşimi, büyüklüğü ve cerrahi tekniğe göre fiyat değişebilir.","cashOnly":false},{"id":330013,"clinic":"KBB","name":"Nazofarenks Biyopsisi","minPrice":100000,"maxPrice":100000,"sgkPrice":null,"privatePrice":null,"description":"Gerekirse mikrolaringoskopi ile kombine edilebilir.","cashOnly":false},{"id":330014,"clinic":"KBB","name":"Larenks / Vokal Kord Lezyon Eksizyonu","minPrice":18000,"maxPrice":25000,"sgkPrice":null,"privatePrice":null,"description":"Lezyonun yeri, büyüklüğü ve uygulanacak tekniğe göre fiyat değişebilir.","cashOnly":false}];
+
 let data = [];
 let editing = null;
 let migrating = false;
 let isAdmin = false;
+let hasLoadedSnapshot = false;
+let branchSeedSyncAttempted = false;
 
 const listElement = document.getElementById("list");
 const connectionStatus = document.getElementById("connectionStatus");
@@ -65,6 +70,7 @@ function updateAdminUi(user) {
   }
 
   render();
+  if (isAdmin && hasLoadedSnapshot) syncBranchSeed();
 }
 
 async function login() {
@@ -134,6 +140,42 @@ function getInitialData() {
   return merged;
 }
 
+
+function recordKey(item) {
+  return `${String(item.clinic || "").trim()}|${String(item.name || "").trim()}`
+    .toLocaleLowerCase("tr-TR");
+}
+
+async function syncBranchSeed() {
+  if (!isAdmin || !hasLoadedSnapshot || branchSeedSyncAttempted) return;
+
+  branchSeedSyncAttempted = true;
+  const existingKeys = new Set(data.map(recordKey));
+  const missing = BRANCH_SEED.map(normalise).filter(item => !existingKeys.has(recordKey(item)));
+
+  if (!missing.length) {
+    localStorage.setItem("branchUpdateVersion", BRANCH_UPDATE_VERSION);
+    return;
+  }
+
+  try {
+    setConnectionStatus(`${missing.length} yeni branş kaydı ortak veritabanına ekleniyor...`);
+    for (let start = 0; start < missing.length; start += 450) {
+      const batch = writeBatch(db);
+      missing.slice(start, start + 450).forEach(item => {
+        batch.set(doc(db, COLLECTION_NAME, String(item.id)), item);
+      });
+      await batch.commit();
+    }
+    localStorage.setItem("branchUpdateVersion", BRANCH_UPDATE_VERSION);
+    setConnectionStatus(`${missing.length} yeni kayıt eklendi • Firebase bağlı.`, "ok");
+  } catch (error) {
+    branchSeedSyncAttempted = false;
+    console.error(error);
+    setConnectionStatus("Yeni branş kayıtları eklenemedi. Yönetici yetkisini kontrol et.", "error");
+  }
+}
+
 async function migrate() {
   if (migrating || !isAdmin) return;
   migrating = true;
@@ -154,6 +196,7 @@ async function migrate() {
 onSnapshot(
   collection(db, COLLECTION_NAME),
   async snapshot => {
+    hasLoadedSnapshot = true;
     if (snapshot.empty) {
       data = [];
       render();
@@ -168,6 +211,7 @@ onSnapshot(
 
     setConnectionStatus("Firebase bağlı • Değişiklikler tüm cihazlara anında yansır.", "ok");
     render();
+    if (isAdmin) await syncBranchSeed();
   },
   error => {
     console.error(error);
