@@ -1,4 +1,4 @@
-import { db, auth, googleProvider } from "./firebase.js?v=10.2";
+import { db, auth, googleProvider } from "./firebase.js?v=10.3";
 import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
@@ -379,7 +379,7 @@ function updateFilter() {
 
 const FIXED_CLINICS = [
   "Beyin ve Sinir Cerrahisi", "Çocuk Cerrahisi", "Genel Cerrahi", "Göğüs Cerrahisi",
-  "Göz Hastalıkları", "Kadın Hastalıkları ve Doğum", "Kalp ve Damar Cerrahisi",
+  "Göz Hastalıkları", "Cildiye", "Kadın Hastalıkları ve Doğum", "Kalp ve Damar Cerrahisi",
   "Kulak Burun Boğaz", "Ortopedi", "Plastik Cerrahi", "Üroloji"
 ];
 
@@ -656,3 +656,49 @@ function clearForm(hidePanel = true) {
   formTitle.textContent = "Yeni Kayıt";
   if (hidePanel) adminPanel.classList.add("hidden");
 }
+
+
+// v10.3 sabit menü yardımcıları
+const sideNewRecord = document.getElementById("sideNewRecord");
+const sideUsers = document.getElementById("sideUsers");
+const sideUpdates = document.getElementById("sideUpdates");
+const sideBackup = document.getElementById("sideBackup");
+const sideHome = document.getElementById("sideHome");
+const sidePrint = document.getElementById("sidePrint");
+const desktopContent = document.getElementById("desktopContent");
+const mobileMenuButton = document.getElementById("mobileMenuButton");
+const sidebar = document.getElementById("sidebar");
+
+function scrollWorkspaceTo(element) {
+  if (!element) return;
+  element.scrollIntoView({ behavior: "smooth", block: "start" });
+  sidebar?.classList.remove("mobile-open");
+}
+
+sideHome?.addEventListener("click", () => {
+  document.getElementById("listSection")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  sidebar?.classList.remove("mobile-open");
+});
+sidePrint?.addEventListener("click", () => printButton?.click());
+sideNewRecord?.addEventListener("click", () => newRecordButton?.click());
+sideUsers?.addEventListener("click", () => {
+  if (adminPanel?.classList.contains("hidden")) newRecordButton?.click();
+  setTimeout(() => scrollWorkspaceTo(document.getElementById("userManagementSection")), 40);
+});
+sideUpdates?.addEventListener("click", () => {
+  if (adminPanel?.classList.contains("hidden")) newRecordButton?.click();
+  setTimeout(() => scrollWorkspaceTo(document.getElementById("pediatricSection")), 40);
+});
+sideBackup?.addEventListener("click", () => {
+  if (adminPanel?.classList.contains("hidden")) newRecordButton?.click();
+  setTimeout(() => scrollWorkspaceTo(document.getElementById("backupSection")), 40);
+});
+mobileMenuButton?.addEventListener("click", () => sidebar?.classList.toggle("mobile-open"));
+
+// Yöneticiye özel yan menü öğelerini mevcut yetki düğmesiyle eş zamanlı tut.
+const syncSidebarPermissions = () => {
+  const adminVisible = newRecordButton && !newRecordButton.classList.contains("hidden");
+  document.querySelectorAll(".sidebar-admin").forEach(el => el.classList.toggle("hidden", !adminVisible));
+};
+new MutationObserver(syncSidebarPermissions).observe(newRecordButton, { attributes: true, attributeFilter: ["class"] });
+syncSidebarPermissions();
