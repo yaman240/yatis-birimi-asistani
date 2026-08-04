@@ -78,4 +78,20 @@ function edit(id){const x=data.find(y=>y.id===id);if(!x)return;editing=id;clinic
 async function remove(id){const x=data.find(y=>y.id===id);if(!x||!confirm(`“${x.name}” kaydı silinsin mi?`))return;await deleteDoc(doc(db,C,id));if(editing===id)clearForm()}
 function clearForm(){editing=null;el("name").value="";["minPrice","maxPrice","sgkPrice","privatePrice"].forEach(k=>el(k).value="");el("description").value="";el("cashOnly").checked=false;el("saveButton").textContent="Kaydet";clinicOptions()}
 function printList(){const rows=filtered();if(!rows.length){alert("Yazdırılacak kayıt yok.");return}const selected=el("filter").value;el("printHeader").innerHTML=`<h1>${esc(selected||"Yatış Birimi Fiyat Listesi")}</h1><div>${selected?"Ameliyat ve İşlem Fiyatları":"Tüm Branşlar"} • ${new Intl.DateTimeFormat("tr-TR").format(new Date())}</div>`;el("printFooter").textContent="Bu liste kurum içi bilgilendirme amaçlıdır.";window.print()}
-el("search").addEventListener("input",render);el("filter").addEventListener("change",render);el("saveButton").addEventListener("click",save);el("clearButton").addEventListener("click",clearForm);el("printButton").addEventListener("click",printList);
+function bindEvents(){
+  const events = [
+    ["search", "input", render],
+    ["filter", "change", render],
+    ["saveButton", "click", save],
+    ["clearButton", "click", clearForm],
+    ["printButton", "click", printList]
+  ];
+  events.forEach(([id,event,handler])=>{
+    const node=el(id);
+    if(node) node.addEventListener(event,handler);
+    else console.warn(`Eksik arayüz öğesi: #${id}`);
+  });
+}
+
+if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", bindEvents, {once:true});
+else bindEvents();
