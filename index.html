@@ -3,37 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Yatış Birimi Asistanı v10.2</title>
-<link rel="stylesheet" href="./style.css?v=10.2">
+<title>Yatış Birimi Asistanı v10.3</title>
+<link rel="stylesheet" href="./style.css?v=10.4">
 <meta name="theme-color" content="#2563eb">
 </head>
 <body>
-<div class="wrap">
-  <header class="box header-box">
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <h1>Yatış Birimi Asistanı</h1>
+    <p>Fiyat listesine erişmek için Google hesabınızla giriş yapın.</p>
+    <button id="loginButton" class="google-btn" type="button">Google ile Giriş Yap</button>
+    <div id="loginStatus" class="login-status">Oturum kontrol ediliyor...</div>
+  </div>
+</div>
+
+<div id="app" class="wrap hidden">
+  <header class="box header-box no-print">
     <div>
       <h1>Yatış Birimi Asistanı</h1>
       <div class="muted">Ameliyat ve işlem fiyatlarını hızlıca bulur.</div>
       <div id="connectionStatus" class="status">Firebase bağlantısı kuruluyor...</div>
     </div>
-    <button id="printButton" class="print-btn" type="button">🖨️ Görünen Listeyi Yazdır</button>
+    <div class="header-actions">
+      <div class="user-box">
+        <strong id="userName">Kullanıcı</strong>
+        <span id="userRole" class="role-badge">Görüntüleyici</span>
+      </div>
+      <button id="printButton" class="print-btn" type="button">🖨️ Görünen Listeyi Yazdır</button>
+      <button id="logoutButton" class="secondary" type="button">Çıkış Yap</button>
+    </div>
   </header>
 
   <section class="box no-print">
     <div class="filters">
-      <input id="search" placeholder="Ameliyat veya işlem ara...">
-      <select id="filter"></select>
+      <input id="search" placeholder="Ameliyat veya işlem ara..." autocomplete="off">
+      <select id="filter"><option value="">Tüm branşlar</option></select>
     </div>
   </section>
 
-  <section id="recordForm" class="box no-print">
+  <section id="recordForm" class="box no-print admin-only hidden">
     <h2>Kayıt Ekle / Düzenle</h2>
     <div class="grid">
       <div class="full">
         <label for="clinic">Branş</label>
         <select id="clinic"></select>
-        <div class="field-help">Manuel yazım kapatıldı; böylece aynı branş farklı yazımla tekrar oluşmaz.</div>
       </div>
-      <div class="full"><label for="name">Ameliyat / işlem adı</label><input id="name"></div>
+      <div class="full"><label for="name">Ameliyat / işlem adı</label><input id="name" autocomplete="off"></div>
       <div><label for="minPrice">Genel en düşük fiyat</label><input id="minPrice" type="number" min="0"></div>
       <div><label for="maxPrice">Genel en yüksek fiyat</label><input id="maxPrice" type="number" min="0"></div>
       <div><label for="sgkPrice">SGK'lı fiyat</label><input id="sgkPrice" type="number" min="0"></div>
@@ -52,8 +67,7 @@
     <div id="list"><p class="muted">Kayıtlar yükleniyor...</p></div>
     <div id="printFooter" class="print-footer"></div>
   </main>
-
 </div>
-<script type="module" src="./app.js?v=10.2"></script>
+<script type="module" src="./app.js?v=10.4"></script>
 </body>
 </html>
