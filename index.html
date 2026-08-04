@@ -3,91 +3,56 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Yatış Birimi Asistanı</title>
+<title>Yatış Birimi Asistanı v10</title>
 <link rel="stylesheet" href="./style.css?v=10">
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#0f3d66">
-<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="theme-color" content="#2563eb">
 </head>
 <body>
 <div class="wrap">
-  <div class="box">
-    <div class="header-row">
-      <div class="brand-block">
-        <div class="brand-icon" aria-hidden="true">✚</div>
-        <div>
-          <div class="eyebrow">HASTA YATIŞ VE FİYATLANDIRMA</div>
-          <h1>Yatış Birimi Asistanı</h1>
-          <div class="muted">Ameliyat ve işlem fiyatlarına hızlı, güvenli ve sade erişim.</div>
-        </div>
-      </div>
-      <div class="auth-actions">
-        <button id="newRecordButton" class="primary hidden">➕ Yeni Kayıt</button>
-        <button id="loginButton" class="google-button">🔐 Google ile Yönetici Girişi</button>
-        <button id="logoutButton" class="secondary hidden">Çıkış Yap</button>
-      </div>
+  <header class="box header-box">
+    <div>
+      <h1>Yatış Birimi Asistanı</h1>
+      <div class="muted">Ameliyat ve işlem fiyatlarını hızlıca bulur.</div>
+      <div id="connectionStatus" class="status">Firebase bağlantısı kuruluyor...</div>
     </div>
-    <div id="adminStatus" class="admin-status visitor">Ziyaretçi modu • Kayıtlar yalnızca görüntülenebilir.</div>
-    <div id="connectionStatus" class="status">Firebase bağlantısı kuruluyor...</div>
-  </div>
+    <button id="printButton" class="print-btn" type="button">🖨️ Görünen Listeyi Yazdır</button>
+  </header>
 
-  <div class="box content-box">
-    <div class="section-heading">
-      <div>
-        <div class="eyebrow">HIZLI ARAMA</div>
-        <h2>İşlem ve fiyat listesi</h2>
-      </div>
-    </div>
+  <section class="box no-print">
     <div class="filters">
-      <div class="search-wrap"><span class="search-icon">⌕</span><input id="search" placeholder="Ameliyat veya işlem ara..." autocomplete="off"></div>
-      <select id="filter" aria-label="Poliklinik seç"></select>
+      <input id="search" placeholder="Ameliyat veya işlem ara...">
+      <select id="filter"></select>
     </div>
-    <div id="list"><p class="muted loading-state">Kayıtlar yükleniyor...</p></div>
-  </div>
+  </section>
 
-  <div id="adminPanel" class="box hidden">
-    <div class="panel-header">
-      <h2 id="formTitle">Yeni Kayıt</h2>
-      <button id="closePanelButton" class="secondary compact-button">✕ Kapat</button>
-    </div>
+  <main class="box list-box">
+    <div id="printHeader" class="print-header"></div>
+    <div id="list"><p class="muted">Kayıtlar yükleniyor...</p></div>
+    <div id="printFooter" class="print-footer"></div>
+  </main>
+
+  <section class="box no-print">
+    <h2>Kayıt Ekle / Düzenle</h2>
     <div class="grid">
-      <div class="full"><label for="clinic">Poliklinik</label><input id="clinic" placeholder="Örn: Ortopedi"></div>
+      <div class="full">
+        <label for="clinic">Branş</label>
+        <select id="clinic"></select>
+        <div class="field-help">Manuel yazım kapatıldı; böylece aynı branş farklı yazımla tekrar oluşmaz.</div>
+      </div>
       <div class="full"><label for="name">Ameliyat / işlem adı</label><input id="name"></div>
-      <div><label for="minPrice">Genel en düşük fiyat</label><input id="minPrice" type="number"></div>
-      <div><label for="maxPrice">Genel en yüksek fiyat</label><input id="maxPrice" type="number"></div>
-      <div><label for="sgkPrice">SGK'lı fiyat</label><input id="sgkPrice" type="number"></div>
-      <div><label for="privatePrice">Özel / ücretli fiyat</label><input id="privatePrice" type="number"></div>
-      <div class="full"><label for="description">Açıklama</label><textarea id="description"></textarea></div>
+      <div><label for="minPrice">Genel en düşük fiyat</label><input id="minPrice" type="number" min="0"></div>
+      <div><label for="maxPrice">Genel en yüksek fiyat</label><input id="maxPrice" type="number" min="0"></div>
+      <div><label for="sgkPrice">SGK'lı fiyat</label><input id="sgkPrice" type="number" min="0"></div>
+      <div><label for="privatePrice">Özel / ücretli fiyat</label><input id="privatePrice" type="number" min="0"></div>
+      <div class="full"><label for="description">Açıklama</label><textarea id="description" rows="4"></textarea></div>
       <div class="full check"><input id="cashOnly" type="checkbox"><label for="cashOnly">Sadece nakit ödeme</label></div>
     </div>
     <div class="actions">
-      <button id="saveButton" class="primary">Kaydet</button>
-      <button id="clearButton" class="secondary">İptal</button>
+      <button id="saveButton" class="primary" type="button">Kaydet</button>
+      <button id="clearButton" class="secondary" type="button">Temizle</button>
     </div>
-
-    <div class="backup-panel">
-      <h3>Yedekleme</h3>
-      <div class="muted">Tüm kayıtları JSON dosyası olarak indir veya daha önce alınmış yedeği geri yükle.</div>
-      <div class="actions">
-        <button id="backupButton" class="secondary">⬇ Yedeği İndir</button>
-        <button id="restoreButton" class="secondary">⬆ Yedekten Geri Yükle</button>
-        <input id="restoreFile" class="hidden" type="file" accept=".json,application/json">
-      </div>
-    </div>
-  </div>
+  </section>
 </div>
 <script type="module" src="./app.js?v=10"></script>
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", async () => {
-    try {
-      const registration = await navigator.serviceWorker.register("./service-worker.js?v=10");
-      await registration.update();
-    } catch (error) {
-      console.error(error);
-    }
-  });
-}
-</script>
 </body>
 </html>
