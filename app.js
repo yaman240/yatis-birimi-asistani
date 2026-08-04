@@ -1,4 +1,4 @@
-import { db } from "./firebase.js?v=10";
+import { db } from "./firebase.js?v=10.2";
 import { collection, deleteDoc, doc, onSnapshot, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const C="surgeryPrices";
@@ -66,17 +66,43 @@ const esc=s=>String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replac
 const money=n=>new Intl.NumberFormat("tr-TR").format(n)+" TL";
 function setStatus(m,t=""){status.textContent=m;status.className=`status ${t}`.trim()}
 function priceHtml(x){const a=[];if(x.sgkPrice!=null)a.push(`<span class="chip">SGK: ${money(x.sgkPrice)}</span>`);if(x.privatePrice!=null)a.push(`<span class="chip">Özel: ${money(x.privatePrice)}</span>`);if(!a.length&&x.minPrice!=null)a.push(`<span class="chip">${x.maxPrice!=null&&x.maxPrice!==x.minPrice?money(x.minPrice)+" – "+money(x.maxPrice):money(x.minPrice)}</span>`);if(!a.length)a.push('<span class="chip">Fiyat girilmedi</span>');return a.join("")}
-function clinicOptions(){const current=el("clinic").value;const clinics=[...new Set([...FIXED_CLINICS,...data.map(x=>x.clinic)])].sort((a,b)=>a.localeCompare(b,"tr"));el("clinic").innerHTML=clinics.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");el("clinic").value=clinics.includes(current)?current:"Çocuk Cerrahisi"}
-function updateFilter(){const f=el("filter"),v=f.value,clinics=[...new Set(data.map(x=>x.clinic))].sort((a,b)=>a.localeCompare(b,"tr"));f.innerHTML='<option value="">Tüm branşlar</option>'+clinics.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");if(clinics.includes(v))f.value=v}
+function clinicOptions(){
+  const select=el("clinic");
+  if(!select)return;
+  const current=select.value;
+  const clinics=[...new Set([...FIXED_CLINICS,...data.map(x=>x.clinic)])].sort((a,b)=>a.localeCompare(b,"tr"));
+  select.innerHTML=clinics.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");
+  select.value=clinics.includes(current)?current:"Çocuk Cerrahisi";
+}
+function updateFilter(){
+  const f=el("filter");
+  if(!f)return;
+  const current=f.value;
+  const clinics=[...new Set(data.map(x=>x.clinic))].sort((a,b)=>a.localeCompare(b,"tr"));
+  f.innerHTML='<option value="">Tüm branşlar</option>'+clinics.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");
+  if(clinics.includes(current))f.value=current;
+}
+function refreshSelects(){
+  updateFilter();
+  clinicOptions();
+}
 function filtered(){const q=normText(el("search").value),c=el("filter").value;return data.filter(x=>(!c||x.clinic===c)&&(!q||normText(x.name+" "+x.description+" "+x.clinic).includes(q)))}
-function render(){updateFilter();clinicOptions();const rows=filtered();const groups=rows.reduce((a,x)=>((a[x.clinic]??=[]).push(x),a),{});const names=Object.keys(groups).sort((a,b)=>a.localeCompare(b,"tr"));if(!names.length){list.innerHTML='<p class="muted">Kayıt bulunamadı.</p>';return}list.innerHTML=names.map(c=>`<section><div class="group-title"><h3>${esc(c)}</h3><span class="count">${groups[c].length} kayıt</span></div>${groups[c].map(x=>`<article class="card ${x.cashOnly?'cash':''}">${x.cashOnly?'<div class="cashwarn">SADECE NAKİT ÖDEME</div>':''}<div class="name">${esc(x.name)}</div><div class="prices">${priceHtml(x)}</div>${x.description?`<div class="note">${esc(x.description)}</div>`:''}<div class="actions no-print"><button class="secondary edit" data-id="${esc(x.id)}">Düzenle</button><button class="danger del" data-id="${esc(x.id)}">Sil</button></div></article>`).join("")}</section>`).join("");list.querySelectorAll(".edit").forEach(b=>b.onclick=()=>edit(b.dataset.id));list.querySelectorAll(".del").forEach(b=>b.onclick=()=>remove(b.dataset.id))}
+function render(){
+  const rows=filtered();
+  const groups=rows.reduce((a,x)=>((a[x.clinic]??=[]).push(x),a),{});
+  const names=Object.keys(groups).sort((a,b)=>a.localeCompare(b,"tr"));
+  if(!names.length){list.innerHTML='<p class="muted">Kayıt bulunamadı.</p>';return}
+  list.innerHTML=names.map(c=>`<section><div class="group-title"><h3>${esc(c)}</h3><span class="count">${groups[c].length} kayıt</span></div>${groups[c].map(x=>`<article class="card ${x.cashOnly?'cash':''}">${x.cashOnly?'<div class="cashwarn">SADECE NAKİT ÖDEME</div>':''}<div class="name">${esc(x.name)}</div><div class="prices">${priceHtml(x)}</div>${x.description?`<div class="note">${esc(x.description)}</div>`:''}<div class="actions no-print"><button class="secondary edit" data-id="${esc(x.id)}">Düzenle</button><button class="danger del" data-id="${esc(x.id)}">Sil</button></div></article>`).join("")}</section>`).join("");
+  list.querySelectorAll(".edit").forEach(b=>b.onclick=()=>edit(b.dataset.id));
+  list.querySelectorAll(".del").forEach(b=>b.onclick=()=>remove(b.dataset.id));
+}
 async function applyPediatric(){if(updating)return;updating=true;try{setStatus("Çocuk Cerrahisi listesi güncelleniyor...");const snapData=data.filter(x=>x.clinic==="Çocuk Cerrahisi");const byName=new Map();snapData.forEach(x=>byName.set(normText(x.name),x));const batch=writeBatch(db);PEDIATRIC.forEach((p,i)=>{const keys=[p.name,...p.aliases].map(normText);const old=keys.map(k=>byName.get(k)).find(Boolean);const id=`cocuk-20260804-${String(i+1).padStart(3,"0")}`;if(old&&old.id!==id)batch.delete(doc(db,C,String(old.id)));const clean={...p,id};delete clean.aliases;batch.set(doc(db,C,id),clean)});await batch.commit();localStorage.setItem("pediatricUpdate20260804","done");setStatus("Firebase bağlı • Çocuk Cerrahisi listesi güncel.","ok")}catch(e){console.error(e);setStatus("Çocuk Cerrahisi güncellemesi uygulanamadı. Firestore yazma iznini kontrol et.","error")}finally{updating=false}}
-onSnapshot(collection(db,C),async s=>{data=s.docs.map(d=>norm({...d.data(),id:d.id})).sort((a,b)=>a.clinic.localeCompare(b.clinic,"tr")||a.name.localeCompare(b.name,"tr"));setStatus("Firebase bağlı • Değişiklikler tüm cihazlara anında yansır.","ok");render();if(localStorage.getItem("pediatricUpdate20260804")!=="done")await applyPediatric()},e=>{console.error(e);setStatus("Firebase bağlantısı kurulamadı. Firestore kurallarını kontrol et.","error");list.innerHTML='<p class="muted">Veriler yüklenemedi.</p>'});
+onSnapshot(collection(db,C),async s=>{const scrollY=window.scrollY;data=s.docs.map(d=>norm({...d.data(),id:d.id})).sort((a,b)=>a.clinic.localeCompare(b.clinic,"tr")||a.name.localeCompare(b.name,"tr"));setStatus("Firebase bağlı • Değişiklikler tüm cihazlara anında yansır.","ok");refreshSelects();render();requestAnimationFrame(()=>window.scrollTo({top:scrollY,left:0,behavior:"auto"}));if(localStorage.getItem("pediatricUpdate20260804")!=="done")await applyPediatric()},e=>{console.error(e);setStatus("Firebase bağlantısı kurulamadı. Firestore kurallarını kontrol et.","error");list.innerHTML='<p class="muted">Veriler yüklenemedi.</p>'});
 function num(id){const v=el(id).value.trim();return v===""?null:Number(v)}
 async function save(){const clinic=el("clinic").value,name=el("name").value.trim();if(!clinic||!name){alert("Branş ve işlem adı zorunludur.");return}const minPrice=num("minPrice"),maxPrice=num("maxPrice");if(minPrice!=null&&maxPrice!=null&&maxPrice<minPrice){alert("En yüksek fiyat en düşük fiyattan küçük olamaz.");return}const id=editing||String(Date.now());const item={id,clinic,name,minPrice,maxPrice,sgkPrice:num("sgkPrice"),privatePrice:num("privatePrice"),description:el("description").value.trim(),cashOnly:el("cashOnly").checked};await setDoc(doc(db,C,id),item);clearForm()}
-function edit(id){const x=data.find(y=>y.id===id);if(!x)return;editing=id;clinicOptions();el("clinic").value=x.clinic;el("name").value=x.name;["minPrice","maxPrice","sgkPrice","privatePrice"].forEach(k=>el(k).value=x[k]??"");el("description").value=x.description;el("cashOnly").checked=x.cashOnly;el("saveButton").textContent="Güncelle";window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"})}
+function edit(id){const x=data.find(y=>y.id===id);if(!x)return;editing=id;el("clinic").value=x.clinic;el("name").value=x.name;["minPrice","maxPrice","sgkPrice","privatePrice"].forEach(k=>el(k).value=x[k]??"");el("description").value=x.description;el("cashOnly").checked=x.cashOnly;el("saveButton").textContent="Güncelle";el("recordForm")?.scrollIntoView({behavior:"smooth",block:"start"})}
 async function remove(id){const x=data.find(y=>y.id===id);if(!x||!confirm(`“${x.name}” kaydı silinsin mi?`))return;await deleteDoc(doc(db,C,id));if(editing===id)clearForm()}
-function clearForm(){editing=null;el("name").value="";["minPrice","maxPrice","sgkPrice","privatePrice"].forEach(k=>el(k).value="");el("description").value="";el("cashOnly").checked=false;el("saveButton").textContent="Kaydet";clinicOptions()}
+function clearForm(){editing=null;el("name").value="";["minPrice","maxPrice","sgkPrice","privatePrice"].forEach(k=>el(k).value="");el("description").value="";el("cashOnly").checked=false;el("saveButton").textContent="Kaydet"}
 function printList(){const rows=filtered();if(!rows.length){alert("Yazdırılacak kayıt yok.");return}const selected=el("filter").value;el("printHeader").innerHTML=`<h1>${esc(selected||"Yatış Birimi Fiyat Listesi")}</h1><div>${selected?"Ameliyat ve İşlem Fiyatları":"Tüm Branşlar"} • ${new Intl.DateTimeFormat("tr-TR").format(new Date())}</div>`;el("printFooter").textContent="Bu liste kurum içi bilgilendirme amaçlıdır.";window.print()}
 function bindEvents(){
   const events = [
