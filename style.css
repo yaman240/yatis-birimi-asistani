@@ -19,3 +19,14 @@ input,select,textarea{width:100%;padding:13px 14px;border:1px solid #cfdbe6;bord
 .empty-state{display:flex;flex-direction:column;align-items:center;text-align:center;padding:46px 18px;color:#718296}.empty-state strong{color:#33495d;font-size:17px;margin:9px 0 4px}.empty-state span{font-size:13px}.empty-icon{width:48px;height:48px;display:grid;place-items:center;background:#edf3f8;border-radius:15px;font-size:28px}.loading-state{padding:24px;text-align:center}
 @media(max-width:800px){.card-grid{grid-template-columns:1fr}.filters,.grid{grid-template-columns:1fr}.full{grid-column:auto}.header-row{align-items:flex-start}}
 @media(max-width:620px){.wrap{margin:12px auto 34px;padding:0 10px}.box,.content-box{padding:17px;border-radius:17px}.header-row{flex-direction:column}.brand-block{align-items:flex-start}.brand-icon{width:46px;height:46px;border-radius:14px;font-size:23px}.auth-actions{width:100%;justify-content:flex-start}.auth-actions button{flex:1 1 100%}.section-heading{align-items:flex-start}.group-title{margin-top:22px}.group-count{font-size:11px}.card{padding:15px}.name{font-size:16px}.chip{font-size:14px}.panel-header{align-items:flex-start}}
+
+.admin-status.user{background:#e8f2ff;color:#164f88;border-color:#b8d4f0}
+.locked-content .filters{display:none}
+.login-required{padding:34px;text-align:center;border:1px dashed #b8c6d3;border-radius:14px;background:#f8fafc;color:#496275}
+.login-required strong{display:block;font-size:20px;margin-bottom:8px;color:#173a57}
+.user-add-row{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:14px}
+.user-list{display:grid;gap:8px;margin-top:12px}
+.user-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #d8e1e8;border-radius:10px;background:#fff}
+.user-row-actions{display:flex;gap:7px;flex-wrap:wrap}
+button.danger{background:#fff0f0;border:1px solid #e4a8a8;color:#9d2525}
+@media(max-width:700px){.user-add-row{grid-template-columns:1fr}.user-row{align-items:flex-start;flex-direction:column}.user-row-actions{width:100%}}
