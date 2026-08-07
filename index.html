@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Yatış Birimi Asistanı</title>
-<link rel="stylesheet" href="./style.css?v=10">
+<link rel="stylesheet" href="./style.css?v=11">
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#0f3d66">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -76,12 +76,12 @@
     </div>
   </div>
 </div>
-<script type="module" src="./app.js?v=10"></script>
+<script type="module" src="./app.js?v=11"></script>
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("./service-worker.js?v=10");
+      const registration = await navigator.serviceWorker.register("./service-worker.js?v=11");
       await registration.update();
     } catch (error) {
       console.error(error);
