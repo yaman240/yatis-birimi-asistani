@@ -4,108 +4,88 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Yatış Birimi Asistanı</title>
-<link rel="stylesheet" href="./style.css?v=10.3">
+<link rel="stylesheet" href="./style.css?v=10">
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#0f3d66">
 <link rel="apple-touch-icon" href="./icon-192.png">
 </head>
 <body>
-<div class="app-shell">
-  <aside id="sidebar" class="sidebar">
-    <div class="sidebar-brand">
-      <div class="sidebar-logo">✚</div>
-      <div><strong>Yatış Asistanı</strong><span>Fiyatlandırma</span></div>
-    </div>
-    <nav class="sidebar-nav" aria-label="Ana menü">
-      <button id="sideHome" class="nav-item active">⌂ <span>Ana Liste</span></button>
-      <button id="sideNewRecord" class="nav-item sidebar-admin hidden">＋ <span>Yeni Kayıt</span></button>
-      <button id="sideUsers" class="nav-item sidebar-admin hidden">♙ <span>Kullanıcılar</span></button>
-      <button id="sideUpdates" class="nav-item sidebar-admin hidden">↻ <span>Güncellemeler</span></button>
-      <button id="sideBackup" class="nav-item sidebar-admin hidden">⬇ <span>Yedekleme</span></button>
-      <button id="sidePrint" class="nav-item">▤ <span>Yazdır</span></button>
-    </nav>
-    <div class="sidebar-foot">Stabil sürüm 10.3</div>
-  </aside>
-
-  <section class="workspace">
-    <header class="topbar">
-      <button id="mobileMenuButton" class="mobile-menu" aria-label="Menüyü aç">☰</button>
-      <div class="topbar-title">
-        <div class="eyebrow">HASTA YATIŞ VE FİYATLANDIRMA</div>
-        <h1>Yatış Birimi Asistanı</h1>
+<div class="wrap">
+  <div class="box">
+    <div class="header-row">
+      <div class="brand-block">
+        <div class="brand-icon" aria-hidden="true">✚</div>
+        <div>
+          <div class="eyebrow">HASTA YATIŞ VE FİYATLANDIRMA</div>
+          <h1>Yatış Birimi Asistanı</h1>
+          <div class="muted">Ameliyat ve işlem fiyatlarına hızlı, güvenli ve sade erişim.</div>
+        </div>
       </div>
       <div class="auth-actions">
-        <button id="printButton" class="secondary">🖨️ Yazdır</button>
         <button id="newRecordButton" class="primary hidden">➕ Yeni Kayıt</button>
-        <button id="loginButton" class="google-button">🔐 Google ile Giriş Yap</button>
+        <button id="loginButton" class="google-button">🔐 Google ile Yönetici Girişi</button>
         <button id="logoutButton" class="secondary hidden">Çıkış Yap</button>
       </div>
-    </header>
+    </div>
+    <div id="adminStatus" class="admin-status visitor">Ziyaretçi modu • Kayıtlar yalnızca görüntülenebilir.</div>
+    <div id="connectionStatus" class="status">Firebase bağlantısı kuruluyor...</div>
+  </div>
 
-    <main id="desktopContent" class="desktop-content">
-      <div class="status-strip">
-        <div id="adminStatus" class="admin-status visitor">Ziyaretçi modu • Kayıtlar yalnızca görüntülenebilir.</div>
-        <div id="connectionStatus" class="status">Firebase bağlantısı kuruluyor...</div>
+  <div class="box content-box">
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow">HIZLI ARAMA</div>
+        <h2>İşlem ve fiyat listesi</h2>
       </div>
+    </div>
+    <div class="filters">
+      <div class="search-wrap"><span class="search-icon">⌕</span><input id="search" placeholder="Ameliyat veya işlem ara..." autocomplete="off"></div>
+      <select id="filter" aria-label="Poliklinik seç"></select>
+    </div>
+    <div id="list"><p class="muted loading-state">Kayıtlar yükleniyor...</p></div>
+  </div>
 
-      <section id="listSection" class="box content-box">
-        <div class="section-heading">
-          <div><div class="eyebrow">HIZLI ARAMA</div><h2>İşlem ve fiyat listesi</h2></div>
-        </div>
-        <div class="sticky-tools">
-          <div class="filters">
-            <div class="search-wrap"><span class="search-icon">⌕</span><input id="search" placeholder="Ameliyat veya işlem ara..." autocomplete="off"></div>
-            <select id="filter" aria-label="Poliklinik seç"></select>
-          </div>
-        </div>
-        <div id="list"><p class="muted loading-state">Kayıtlar yükleniyor...</p></div>
-      </section>
+  <div id="adminPanel" class="box hidden">
+    <div class="panel-header">
+      <h2 id="formTitle">Yeni Kayıt</h2>
+      <button id="closePanelButton" class="secondary compact-button">✕ Kapat</button>
+    </div>
+    <div class="grid">
+      <div class="full"><label for="clinic">Poliklinik</label><input id="clinic" placeholder="Örn: Ortopedi"></div>
+      <div class="full"><label for="name">Ameliyat / işlem adı</label><input id="name"></div>
+      <div><label for="minPrice">Genel en düşük fiyat</label><input id="minPrice" type="number"></div>
+      <div><label for="maxPrice">Genel en yüksek fiyat</label><input id="maxPrice" type="number"></div>
+      <div><label for="sgkPrice">SGK'lı fiyat</label><input id="sgkPrice" type="number"></div>
+      <div><label for="privatePrice">Özel / ücretli fiyat</label><input id="privatePrice" type="number"></div>
+      <div class="full"><label for="description">Açıklama</label><textarea id="description"></textarea></div>
+      <div class="full check"><input id="cashOnly" type="checkbox"><label for="cashOnly">Sadece nakit ödeme</label></div>
+    </div>
+    <div class="actions">
+      <button id="saveButton" class="primary">Kaydet</button>
+      <button id="clearButton" class="secondary">İptal</button>
+    </div>
 
-      <section id="adminPanel" class="box hidden admin-panel-section">
-        <div class="panel-header">
-          <h2 id="formTitle">Yeni Kayıt</h2>
-          <button id="closePanelButton" class="secondary compact-button">✕ Kapat</button>
-        </div>
-        <div class="grid">
-          <div class="full"><label for="clinic">Poliklinik</label><select id="clinic" aria-label="Poliklinik seç"></select></div>
-          <div class="full"><label for="name">Ameliyat / işlem adı</label><input id="name"></div>
-          <div><label for="minPrice">Genel en düşük fiyat</label><input id="minPrice" type="number"></div>
-          <div><label for="maxPrice">Genel en yüksek fiyat</label><input id="maxPrice" type="number"></div>
-          <div><label for="sgkPrice">SGK'lı fiyat</label><input id="sgkPrice" type="number"></div>
-          <div><label for="privatePrice">Özel / ücretli fiyat</label><input id="privatePrice" type="number"></div>
-          <div class="full"><label for="description">Açıklama</label><textarea id="description"></textarea></div>
-          <div class="full check"><input id="cashOnly" type="checkbox"><label for="cashOnly">Sadece nakit ödeme</label></div>
-        </div>
-        <div class="actions"><button id="saveButton" class="primary">Kaydet</button><button id="clearButton" class="secondary">İptal</button></div>
-
-        <div id="userManagementSection" class="backup-panel menu-target">
-          <h3>👥 Kullanıcı Yönetimi</h3>
-          <div class="muted">Eklenen Google hesapları listeyi görebilir, arayabilir ve yazdırabilir; kayıt değiştiremez.</div>
-          <div class="user-add-row"><input id="userEmail" type="email" placeholder="kullanici@gmail.com" autocomplete="off"><button id="addUserButton" class="secondary">Kullanıcı Ekle</button></div>
-          <div id="userList" class="user-list"><div class="muted">Kullanıcılar yönetici girişi sonrasında yüklenir.</div></div>
-        </div>
-
-        <div id="pediatricSection" class="backup-panel menu-target">
-          <h3>Çocuk Cerrahisi Güncellemesi</h3>
-          <div class="muted">Listeyi yalnızca sen istediğinde günceller; açılışta otomatik veri yazmaz.</div>
-          <div class="actions"><button id="pediatricUpdateButton" class="secondary">Çocuk Cerrahisi listesini güncelle</button></div>
-        </div>
-
-        <div id="backupSection" class="backup-panel menu-target">
-          <h3>Yedekleme</h3>
-          <div class="muted">Tüm kayıtları JSON dosyası olarak indir veya daha önce alınmış yedeği geri yükle.</div>
-          <div class="actions"><button id="backupButton" class="secondary">⬇ Yedeği İndir</button><button id="restoreButton" class="secondary">⬆ Yedekten Geri Yükle</button><input id="restoreFile" class="hidden" type="file" accept=".json,application/json"></div>
-        </div>
-      </section>
-    </main>
-  </section>
+    <div class="backup-panel">
+      <h3>Yedekleme</h3>
+      <div class="muted">Tüm kayıtları JSON dosyası olarak indir veya daha önce alınmış yedeği geri yükle.</div>
+      <div class="actions">
+        <button id="backupButton" class="secondary">⬇ Yedeği İndir</button>
+        <button id="restoreButton" class="secondary">⬆ Yedekten Geri Yükle</button>
+        <input id="restoreFile" class="hidden" type="file" accept=".json,application/json">
+      </div>
+    </div>
+  </div>
 </div>
-<script type="module" src="./app.js?v=10.3"></script>
+<script type="module" src="./app.js?v=10"></script>
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
-    try { const registration = await navigator.serviceWorker.register("./service-worker.js?v=10.3"); await registration.update(); }
-    catch (error) { console.error(error); }
+    try {
+      const registration = await navigator.serviceWorker.register("./service-worker.js?v=10");
+      await registration.update();
+    } catch (error) {
+      console.error(error);
+    }
   });
 }
 </script>
