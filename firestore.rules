@@ -1,10 +1,325 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isGuestPhysicianAdmin() {
+      return request.auth != null
+        && request.auth.token.email == "yaman615@gmail.com";
+    }
+
+    function validActor(actor) {
+      return actor is map
+        && actor.keys().hasAll(["uid", "email"])
+        && actor.uid is string
+        && actor.uid == request.auth.uid
+        && actor.email is string
+        && actor.email == request.auth.token.email;
+    }
+
+    function nonNegativeMoney(value) {
+      return value is int && value >= 0;
+    }
+
+    function validRoomFees(roomFees) {
+      return roomFees is map
+        && roomFees.keys().hasAll([
+          "private_room_one_day", "private_room_day_case", "observation_day_case"
+        ])
+        && nonNegativeMoney(roomFees.private_room_one_day)
+        && nonNegativeMoney(roomFees.private_room_day_case)
+        && nonNegativeMoney(roomFees.observation_day_case);
+    }
+
+    function validTariffCategories(categories) {
+      return categories is map
+        && categories.keys().hasAll(["surgery", "dentalEnt", "obstetrics"])
+        && categories.surgery is map
+        && categories.surgery.includedMinutes is int
+        && categories.surgery.includedMinutes > 0
+        && nonNegativeMoney(categories.surgery.baseFeeKurus)
+        && nonNegativeMoney(categories.surgery.excessMinuteFeeKurus)
+        && validRoomFees(categories.surgery.roomFees)
+        && categories.dentalEnt is map
+        && categories.dentalEnt.includedMinutes is int
+        && categories.dentalEnt.includedMinutes > 0
+        && nonNegativeMoney(categories.dentalEnt.baseFeeKurus)
+        && categories.dentalEnt.excessRate is map
+        && nonNegativeMoney(categories.dentalEnt.excessRate.numeratorKurus)
+        && categories.dentalEnt.excessRate.denominatorMinutes is int
+        && categories.dentalEnt.excessRate.denominatorMinutes > 0
+        && validRoomFees(categories.dentalEnt.roomFees)
+        && categories.obstetrics is map
+        && categories.obstetrics.procedures is map
+        && categories.obstetrics.procedures.keys().hasAll([
+          "cesarean", "normalDelivery", "curettageOther"
+        ])
+        && nonNegativeMoney(categories.obstetrics.procedures.cesarean.feeKurus)
+        && nonNegativeMoney(categories.obstetrics.procedures.normalDelivery.feeKurus)
+        && nonNegativeMoney(categories.obstetrics.procedures.curettageOther.feeKurus);
+    }
+
+    function validTariff(data) {
+      return data.keys().hasAll([
+          "schemaVersion", "tariffCode", "version", "status", "currency",
+          "effectiveFrom", "effectiveUntil", "categories", "surcharges",
+          "restrictions", "exclusions", "createdAt", "createdBy", "updatedAt",
+          "updatedBy", "activatedAt", "activatedBy", "changeNote"
+        ])
+        && data.schemaVersion == 1
+        && data.tariffCode is string
+        && data.tariffCode.size() > 0
+        && data.version is int
+        && data.version > 0
+        && data.status in ["draft", "active", "retired"]
+        && data.currency == "TRY"
+        && data.effectiveFrom is timestamp
+        && (data.effectiveUntil == null || data.effectiveUntil is timestamp)
+        && validTariffCategories(data.categories)
+        && data.surcharges is map
+        && data.surcharges.outsideWorkingHours is map
+        && data.surcharges.outsideWorkingHours.rateBasisPoints is int
+        && data.surcharges.outsideWorkingHours.rateBasisPoints >= 0
+        && data.surcharges.outsideWorkingHours.rateBasisPoints <= 10000
+        && data.restrictions is map
+        && data.restrictions.privatePayOnly == true
+        && data.restrictions.sgkAllowed == false
+        && data.exclusions is list
+        && data.createdAt is timestamp
+        && validActor(data.createdBy)
+        && data.updatedAt is timestamp
+        && validActor(data.updatedBy)
+        && (data.activatedAt == null || data.activatedAt is timestamp)
+        && (data.activatedBy == null || validActor(data.activatedBy))
+        && data.changeNote is string;
+    }
+
+    function validCaseTotals(totals) {
+      return totals is map
+        && totals.keys().hasAll([
+          "mainServiceKurus", "accommodationKurus", "outsideWorkingHoursSurchargeKurus",
+          "extraItemsTotalKurus", "hospitalTotalKurus", "patientCollectedKurus",
+          "remainingKurus", "doctorCommissionKurus", "doctorNetPaymentKurus"
+        ])
+        && nonNegativeMoney(totals.mainServiceKurus)
+        && nonNegativeMoney(totals.accommodationKurus)
+        && nonNegativeMoney(totals.outsideWorkingHoursSurchargeKurus)
+        && nonNegativeMoney(totals.extraItemsTotalKurus)
+        && nonNegativeMoney(totals.hospitalTotalKurus)
+        && totals.hospitalTotalKurus
+          == totals.mainServiceKurus + totals.accommodationKurus
+            + totals.outsideWorkingHoursSurchargeKurus + totals.extraItemsTotalKurus
+        && (totals.patientCollectedKurus == null
+          ? (totals.remainingKurus == null
+            && totals.doctorCommissionKurus == null
+            && totals.doctorNetPaymentKurus == null)
+          : (nonNegativeMoney(totals.patientCollectedKurus)
+            && totals.remainingKurus is int
+            && totals.remainingKurus == totals.patientCollectedKurus - totals.hospitalTotalKurus
+            && (totals.remainingKurus < 0
+              ? (totals.doctorCommissionKurus == null
+                && totals.doctorNetPaymentKurus == null)
+              : (nonNegativeMoney(totals.doctorCommissionKurus)
+                && totals.doctorNetPaymentKurus is int
+                && totals.doctorNetPaymentKurus
+                  == totals.remainingKurus - totals.doctorCommissionKurus))));
+    }
+
+    function validCaseShape(data) {
+      return data.keys().hasAll([
+          "schemaVersion", "caseNumber", "status", "tariff", "category",
+          "procedureCode", "patient", "physician", "timing", "accommodation",
+          "options", "lineItems", "totals", "tariffSnapshot", "calculation",
+          "calculationSnapshot", "notes", "createdAt", "createdBy", "updatedAt",
+          "updatedBy", "finalizedAt", "finalizedBy", "cancelledAt", "cancelledBy"
+        ])
+        && data.schemaVersion == 1
+        && data.options is map
+        && data.caseNumber is string
+        && data.caseNumber.size() > 0
+        && data.tariff is map
+        && data.tariff.tariffId is string
+        && data.tariff.tariffCode is string
+        && data.tariff.version is int
+        && data.tariff.version > 0
+        && data.category in ["surgery", "dentalEnt", "obstetrics"]
+        && data.patient is map
+        && data.patient.name is string
+        && data.patient.protocolNumber is string
+        && data.physician is map
+        && data.physician.name is string
+        && data.timing is map
+        && (data.category == "obstetrics"
+          ? (data.procedureCode is string
+            && data.timing.anesthesiaStart == null
+            && data.timing.anesthesiaEnd == null
+            && data.timing.durationMinutes == null)
+          : (data.procedureCode == null
+            && data.timing.anesthesiaStart is string
+            && data.timing.anesthesiaEnd is string
+            && data.timing.durationMinutes is int
+            && data.timing.durationMinutes > 0))
+        && data.accommodation is map
+        && data.accommodation.type is string
+        && data.options.outsideWorkingHours is bool
+        && data.lineItems is list
+        && data.tariffSnapshot is map
+        && data.calculation is map
+        && data.calculation.engineVersion is string
+        && data.calculation.roundingMode is string
+        && data.calculationSnapshot is map
+        && data.notes is string
+        && data.createdAt is timestamp
+        && validActor(data.createdBy)
+        && data.updatedAt is timestamp
+        && validActor(data.updatedBy);
+    }
+
+    function caseCreationIsValid(data) {
+      return data.status == "draft"
+        && data.options.sgk == false
+        && validCaseTotals(data.totals)
+        && data.createdAt == request.time
+        && data.updatedAt == request.time
+        && data.finalizedAt == null
+        && data.finalizedBy == null
+        && data.cancelledAt == null
+        && data.cancelledBy == null
+        && validCaseShape(data);
+    }
+
+    function preservesCaseCreationFields() {
+      return request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy;
+    }
+
+    function finalizedCaseTransitionIsSafe() {
+      return resource.data.status == "finalized"
+        && request.resource.data.status == "cancelled"
+        && request.resource.data.cancelledAt == request.time
+        && validActor(request.resource.data.cancelledBy)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status", "updatedAt", "updatedBy", "cancelledAt", "cancelledBy"
+        ]);
+    }
+
+    function draftCaseTransitionIsSafe() {
+      return resource.data.status == "draft"
+        && request.resource.data.status in ["draft", "finalized", "cancelled"]
+        && (
+          request.resource.data.status == "draft"
+          ||
+          (request.resource.data.status == "finalized"
+            && request.resource.data.finalizedAt == request.time
+            && validActor(request.resource.data.finalizedBy)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              "status", "updatedAt", "updatedBy", "finalizedAt", "finalizedBy"
+            ]))
+          ||
+          (request.resource.data.status == "cancelled"
+            && request.resource.data.cancelledAt == request.time
+            && validActor(request.resource.data.cancelledBy)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              "status", "updatedAt", "updatedBy", "cancelledAt", "cancelledBy"
+            ]))
+        );
+    }
+
+    function draftCaseUpdateIsValid() {
+      return draftCaseTransitionIsSafe()
+        && request.resource.data.options.sgk == false
+        && validCaseTotals(request.resource.data.totals)
+        && preservesCaseCreationFields()
+        && request.resource.data.updatedAt == request.time
+        && validCaseShape(request.resource.data);
+    }
+
+    function caseUpdateIsValid() {
+      return resource.data.status == "finalized"
+        ? finalizedCaseTransitionIsSafe()
+        : draftCaseUpdateIsValid();
+    }
+
     match /surgeryPrices/{document=**} {
       allow read: if request.auth != null;
       allow create, update, delete: if request.auth != null
         && request.auth.token.email == "yaman615@gmail.com";
+    }
+
+    match /guestPhysicianTariffs/{tariffId} {
+      allow read: if isGuestPhysicianAdmin();
+      allow create: if isGuestPhysicianAdmin()
+        && validTariff(request.resource.data)
+        && request.resource.data.status == "draft"
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.activatedAt == null
+        && request.resource.data.activatedBy == null;
+      allow update: if isGuestPhysicianAdmin()
+        && validTariff(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.createdBy == resource.data.createdBy
+        && (
+          (resource.data.status == "draft" && request.resource.data.status == "draft")
+          ||
+          (resource.data.status == "draft"
+            && request.resource.data.status == "active"
+            && request.resource.data.activatedAt == request.time
+            && validActor(request.resource.data.activatedBy)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              "status", "activatedAt", "activatedBy", "updatedAt", "updatedBy"
+            ]))
+          ||
+          (resource.data.status == "active"
+            && request.resource.data.status == "retired"
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              "status", "updatedAt", "updatedBy"
+            ]))
+        );
+      allow delete: if false;
+    }
+
+    match /guestPhysicianTariffSettings/{settingId} {
+      allow read: if isGuestPhysicianAdmin();
+      allow create, update: if isGuestPhysicianAdmin()
+        && settingId == "current"
+        && request.resource.data.keys().hasAll([
+          "schemaVersion", "activeTariffId", "updatedAt", "updatedBy"
+        ])
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.activeTariffId is string
+        && request.resource.data.activeTariffId.size() > 0
+        && request.resource.data.updatedAt == request.time
+        && validActor(request.resource.data.updatedBy)
+        && existsAfter(/databases/$(database)/documents/guestPhysicianTariffs/$(request.resource.data.activeTariffId))
+        && getAfter(/databases/$(database)/documents/guestPhysicianTariffs/$(request.resource.data.activeTariffId)).data.status == "active";
+      allow delete: if false;
+    }
+
+    match /guestPhysicianCases/{caseId} {
+      allow read: if isGuestPhysicianAdmin();
+      allow create: if isGuestPhysicianAdmin() && caseCreationIsValid(request.resource.data);
+      allow update: if isGuestPhysicianAdmin() && caseUpdateIsValid();
+      allow delete: if isGuestPhysicianAdmin() && resource.data.status == "draft";
+    }
+
+    match /guestPhysicianAuditLogs/{logId} {
+      allow read: if isGuestPhysicianAdmin();
+      allow create: if isGuestPhysicianAdmin()
+        && request.resource.data.keys().hasAll([
+          "schemaVersion", "eventType", "entityType", "entityId", "actor",
+          "occurredAt", "details"
+        ])
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.eventType in [
+          "case_created", "case_updated", "case_finalized", "case_cancelled",
+          "tariff_created", "tariff_activated"
+        ]
+        && request.resource.data.entityType in ["case", "tariff"]
+        && request.resource.data.entityId is string
+        && request.resource.data.entityId.size() > 0
+        && validActor(request.resource.data.actor)
+        && request.resource.data.occurredAt == request.time
+        && request.resource.data.details is map;
+      allow update, delete: if false;
     }
   }
 }

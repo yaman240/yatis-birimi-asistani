@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f3d66">
+  <title>Misafir Hekim Hesaplama</title>
+  <link rel="stylesheet" href="./guest-physician.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main class="page-shell">
+    <header class="hero-card">
+      <div class="brand-mark" aria-hidden="true">MH</div>
+      <div>
+        <p class="eyebrow">YATIŞ BİRİMİ ASİSTANI</p>
+        <h1>Misafir Hekim Hesaplama</h1>
+        <p class="hero-copy">2026 tarifesine göre işlem süresi, oda ve mesai dışı ilaveyi hızlıca hesaplayın.</p>
+      </div>
+    </header>
+
+    <section class="category-chooser" aria-labelledby="categoryChooserTitle">
+      <div class="category-heading">
+        <p class="step-label">HESAPLAMA TÜRÜ</p>
+        <h2 id="categoryChooserTitle">Kategori seçin</h2>
+      </div>
+      <div class="category-options">
+        <button class="category-option active" type="button" data-category-choice="surgery">
+          <strong>Cerrahi</strong><span>60 dakikaya kadar 35.000 TL</span>
+        </button>
+        <button class="category-option" type="button" data-category-choice="dentalEnt">
+          <strong>Diş / KBB</strong><span>60 dakikaya kadar 20.000 TL</span>
+        </button>
+        <button class="category-option" type="button" data-category-choice="obstetrics">
+          <strong>Kadın Doğum</strong><span>Sabit işlem tarifeleri</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="case-control-card" aria-labelledby="caseControlTitle">
+      <div class="case-state-line">
+        <div>
+          <p class="step-label case-mode-label">YEREL KAYIT MODU</p>
+          <h2 id="caseControlTitle">Vaka İşlemleri</h2>
+        </div>
+        <div class="case-badges">
+          <span id="connectionBadge" class="connection-badge">Local / Mock</span>
+          <span id="caseStatusBadge" class="case-status-badge status-new">Yeni</span>
+        </div>
+      </div>
+      <p class="local-mode-note">Kayıtlar yalnız bu sayfanın bellek alanında tutulur; Firebase'e gönderilmez ve sayfa yenilenince silinir.</p>
+      <div id="environmentPanel" class="environment-panel">
+        <div class="field environment-field">
+          <label for="environmentMode">Çalışma ortamı</label>
+          <select id="environmentMode">
+            <option value="local" selected>Local / Mock</option>
+            <option value="staging">Staging</option>
+          </select>
+        </div>
+        <div id="stagingConnectionFields" class="staging-fields" hidden>
+          <div class="field">
+            <label for="stagingProjectId">Demo / staging proje kimliği</label>
+            <input id="stagingProjectId" type="text" value="demo-yatis-birimi-asistani" autocomplete="off">
+          </div>
+          <div class="staging-target">
+            <span>Emulator hedefi</span>
+            <strong>127.0.0.1:8080</strong>
+          </div>
+        </div>
+        <button id="connectEnvironmentButton" class="secondary-button" type="button">Ortamı Etkinleştir</button>
+      </div>
+      <p id="activeProjectLabel" class="active-project-label">Aktif ortam: Local / Mock</p>
+      <div id="caseActionMessage" class="case-action-message" role="status" hidden></div>
+      <div class="case-actions">
+        <button id="newCaseButton" class="secondary-button" type="button">Yeni Vaka</button>
+        <button id="saveDraftButton" class="secondary-button primary-outline" type="button">Taslak Kaydet</button>
+        <button id="finalizeCaseButton" class="action-button finalize-button" type="button" disabled>Vakayı Kesinleştir</button>
+        <button id="cancelCaseButton" class="action-button cancel-button" type="button" disabled>İptal Et</button>
+      </div>
+    </section>
+
+    <section class="calculator-card" aria-labelledby="calculatorTitle">
+      <div class="section-heading">
+        <div>
+          <p class="step-label">1. ADIM</p>
+          <h2 id="calculatorTitle">İşlem bilgileri</h2>
+        </div>
+        <span class="tariff-badge">2026 Tarifesi</span>
+      </div>
+
+      <form id="calculationForm" novalidate>
+        <input id="category" name="category" type="hidden" value="surgery">
+        <fieldset class="form-section">
+          <legend>
+            <span class="step-label">VAKA BİLGİLERİ</span>
+            <strong>Hasta ve işlem</strong>
+          </legend>
+          <div class="form-grid">
+            <div class="field">
+              <label for="patientName">Hasta adı <span class="required-mark" aria-label="zorunlu">*</span></label>
+              <input id="patientName" name="patientName" type="text" autocomplete="off" required>
+            </div>
+            <div class="field">
+              <label for="protocolNumber">Protokol numarası <span class="required-mark" aria-label="zorunlu">*</span></label>
+              <input id="protocolNumber" name="protocolNumber" type="text" autocomplete="off" required>
+            </div>
+            <div class="field">
+              <label for="physicianName">Misafir hekim / doktor adı <span class="required-mark" aria-label="zorunlu">*</span></label>
+              <input id="physicianName" name="physicianName" type="text" autocomplete="off" required>
+            </div>
+            <div class="field">
+              <label for="procedureDate">İşlem tarihi <span class="required-mark" aria-label="zorunlu">*</span></label>
+              <input id="procedureDate" name="procedureDate" type="date" required>
+            </div>
+            <div class="field full-width">
+              <label for="caseNote">Açıklama / not</label>
+              <textarea id="caseNote" name="caseNote" rows="3"></textarea>
+            </div>
+          </div>
+          <p class="privacy-note">Bu prototipte vaka bilgileri yalnız geçici local/mock belleğe kaydedilir ve hiçbir yere gönderilmez.</p>
+        </fieldset>
+
+        <div class="form-divider"></div>
+
+        <div id="durationFields" class="form-grid">
+          <div class="field">
+            <label for="anesthesiaStart">Anestezi başlangıç saati <span class="required-mark" aria-label="zorunlu">*</span></label>
+            <input id="anesthesiaStart" name="anesthesiaStart" type="time" step="60" required>
+          </div>
+          <div class="field">
+            <label for="anesthesiaEnd">Anestezi bitiş saati <span class="required-mark" aria-label="zorunlu">*</span></label>
+            <input id="anesthesiaEnd" name="anesthesiaEnd" type="time" step="60" required>
+          </div>
+          <div class="duration-panel full-width" aria-live="polite">
+            <span class="duration-label">Toplam ameliyathane süresi</span>
+            <strong id="durationValue">—</strong>
+          </div>
+          <div id="durationInfo" class="duration-info full-width" role="status" hidden></div>
+          <div class="field full-width">
+            <label for="accommodation">Oda seçimi</label>
+            <select id="accommodation" name="accommodation">
+              <option value="none">Yok</option>
+              <option value="private_room_one_day">1 günlük özel oda</option>
+              <option value="private_room_day_case">Günübirlik özel oda</option>
+              <option value="observation_day_case">Müşahede salonu</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="obstetricsFields" class="field full-width" hidden>
+          <label for="procedureCode">Kadın Doğum işlemi <span class="required-mark" aria-label="zorunlu">*</span></label>
+          <select id="procedureCode" name="procedureCode">
+            <option value="cesarean">Sezaryen</option>
+            <option value="normalDelivery">Normal Doğum</option>
+            <option value="curettageOther">Küretaj vb.</option>
+          </select>
+        </div>
+
+        <label class="check-row" for="outsideWorkingHours">
+          <input id="outsideWorkingHours" name="outsideWorkingHours" type="checkbox">
+          <span>
+            <strong>Normal mesai dışında</strong>
+            <small>Ana işlem / ameliyathane bedeline %20 ilave edilir.</small>
+          </span>
+        </label>
+
+        <fieldset class="form-section extras-section">
+          <legend>
+            <span class="step-label">EK ÜCRETLER</span>
+            <strong>Ek kalemler</strong>
+          </legend>
+          <div class="extras-toolbar">
+            <p>Kan ürünü, tetkik, sarf ve diğer ücretleri isteğe bağlı ekleyin.</p>
+            <button id="addExtraItemButton" class="secondary-button" type="button">+ Kalem ekle</button>
+          </div>
+          <div id="extraItems" class="extra-items" aria-live="polite"></div>
+          <div class="extras-subtotal">
+            <span>Ek kalemler toplamı</span>
+            <strong id="extrasPreviewTotal">₺0,00</strong>
+          </div>
+        </fieldset>
+
+        <div class="field collected-field">
+          <label for="patientCollected">Hastadan alınan toplam tutar <span class="optional-label">İsteğe bağlı</span></label>
+          <div class="money-input-wrap">
+            <span>₺</span>
+            <input id="patientCollected" name="patientCollected" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
+          </div>
+          <small class="field-help">Türkçe para biçimi kullanın; ör. 45.000,00</small>
+        </div>
+
+        <fieldset class="form-section commission-section">
+          <legend>
+            <span class="step-label">MALİ DAĞILIM</span>
+            <strong>Doktor Payı / Komisyon</strong>
+          </legend>
+          <div class="field">
+            <label for="commissionMethod">Hesaplama yöntemi</label>
+            <select id="commissionMethod" name="commissionMethod">
+              <option value="none">Yok</option>
+              <option value="remaining_percentage">Kalan tutarın %X’i</option>
+              <option value="collected_percentage">Hastadan alınan toplam tutarın %X’i</option>
+              <option value="manual_fixed">Manuel sabit tutar</option>
+            </select>
+          </div>
+          <div id="commissionPercentageField" class="field" hidden>
+              <label for="commissionPercentage">Yüzde oranı <span class="required-mark" aria-label="zorunlu">*</span></label>
+            <div class="percentage-input-wrap">
+              <input id="commissionPercentage" name="commissionPercentage" type="text" inputmode="decimal" placeholder="10">
+              <span>%</span>
+            </div>
+            <small class="field-help">0 ile 100 arasında, en fazla iki ondalık basamak.</small>
+          </div>
+          <div id="commissionManualField" class="field" hidden>
+            <label for="commissionManualAmount">Manuel komisyon tutarı <span class="required-mark" aria-label="zorunlu">*</span></label>
+            <div class="money-input-wrap">
+              <span>₺</span>
+              <input id="commissionManualAmount" name="commissionManualAmount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
+            </div>
+            <small class="field-help">Kalan tutardan büyük olamaz.</small>
+          </div>
+        </fieldset>
+
+        <div id="formError" class="form-error" role="alert" hidden></div>
+        <button class="calculate-button" type="submit">Hesapla</button>
+        <button id="printReportButton" class="print-button" type="button" disabled>PDF / Yazdır</button>
+        <small class="print-help">Güncel hesap sonucunu tarayıcınızdan PDF olarak kaydedebilir veya yazdırabilirsiniz.</small>
+      </form>
+    </section>
+
+    <section id="resultCard" class="result-card" aria-labelledby="resultTitle" aria-live="polite" hidden>
+      <div class="section-heading result-heading">
+        <div>
+          <p class="step-label">HESAP SONUCU</p>
+          <h2 id="resultTitle">Ücret dökümü</h2>
+        </div>
+        <span id="resultDuration" class="result-duration"></span>
+      </div>
+
+      <dl class="breakdown">
+        <div class="breakdown-row">
+          <dt>Ana işlem / ameliyathane bedeli</dt>
+          <dd id="mainServiceAmount"></dd>
+        </div>
+        <div id="excessDurationRow" class="breakdown-row" hidden>
+          <dt id="excessDurationLabel">Fazla süre</dt>
+          <dd id="excessDurationAmount"></dd>
+        </div>
+        <div class="breakdown-row">
+          <dt>Oda bedeli</dt>
+          <dd id="accommodationAmount"></dd>
+        </div>
+        <div class="breakdown-row">
+          <dt>Mesai dışı fark</dt>
+          <dd id="surchargeAmount"></dd>
+        </div>
+        <div class="breakdown-row">
+          <dt>Ek kalemler</dt>
+          <dd id="breakdownExtras"></dd>
+        </div>
+        <div class="breakdown-row total-row hospital-result-row finance-result-card hospital-total-card">
+          <dt>Hastane Toplam Bedeli</dt>
+          <dd id="resultHospitalTotal" class="financial-card-amount"></dd>
+        </div>
+      </dl>
+
+      <div class="financial-summary">
+        <h3>Mali Dağılım</h3>
+        <dl class="breakdown compact-breakdown">
+          <div class="breakdown-row collection-row">
+            <dt>Hastadan alınan tutar</dt>
+            <dd id="summaryPatientCollected"></dd>
+          </div>
+          <div class="breakdown-row hospital-total-row">
+            <dt>Hastane toplam bedeli</dt>
+            <dd id="summaryHospitalTotal"></dd>
+          </div>
+          <div class="breakdown-row remaining-row">
+            <dt>Kalan tutar</dt>
+            <dd id="summaryRemaining"></dd>
+          </div>
+          <div class="breakdown-row commission-result-row">
+            <dt>Doktor payı / komisyon</dt>
+            <dd id="summaryDoctorCommission"></dd>
+          </div>
+          <div class="breakdown-row doctor-net-row finance-result-card doctor-net-card">
+            <dt>Doktora ödenecek net tutar</dt>
+            <dd id="summaryDoctorNet" class="financial-card-amount"></dd>
+          </div>
+        </dl>
+        <div id="negativeRemainingWarning" class="negative-warning" role="alert" hidden></div>
+        <div id="commissionWarning" class="negative-warning" role="alert" hidden></div>
+      </div>
+
+      <div class="notice-box">
+        <h3>Tarife notları</h3>
+        <ul>
+          <li>Tetkikler dahil değildir.</li>
+          <li>Özellikli malzeme ve patoloji dahil değildir.</li>
+          <li id="dentalConsumablesWarning" data-category-warning="dentalEnt" hidden>Diş operasyonlarında ekstra sarflar dahil değildir.</li>
+          <li>İşlemler özel ücretlidir; SGK'lı işlem açılamaz.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <section id="printReport" class="print-report" aria-hidden="true"></section>
+
+  <script type="module" src="./guest-physician-app.js"></script>
+</body>
+</html>

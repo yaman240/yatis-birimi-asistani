@@ -1,0 +1,11 @@
+backups/
+node_modules/
+.pnpm-store/
+*-debug.log
+firebase-debug.log*
+firestore-debug.log*
+*.tmp
+*.temp
+.cache/
+.DS_Store
+Thumbs.db

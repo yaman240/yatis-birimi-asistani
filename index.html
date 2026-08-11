@@ -31,6 +31,20 @@
     <div id="connectionStatus" class="status">Firebase bağlantısı kuruluyor...</div>
   </div>
 
+  <div class="app-layout">
+    <nav class="app-sidebar box" aria-label="Ana menü">
+      <button class="nav-item active" type="button" data-workspace-view="prices" aria-current="page">
+        <span class="nav-icon" aria-hidden="true">₺</span>
+        <span>Fiyat Listesi</span>
+      </button>
+      <button id="guestPhysicianMenuButton" class="nav-item" type="button" data-workspace-view="guest-physician">
+        <span class="nav-icon" aria-hidden="true">MH</span>
+        <span>Misafir Hekim</span>
+      </button>
+    </nav>
+
+    <div class="workspace-shell">
+      <div id="pricesWorkspace">
   <div class="box content-box">
     <div class="section-heading">
       <div>
@@ -75,8 +89,30 @@
       </div>
     </div>
   </div>
+      </div>
+
+      <section id="guestPhysicianWorkspace" class="guest-workspace hidden" aria-labelledby="guestWorkspaceTitle">
+        <div class="box guest-workspace-header">
+          <div>
+            <div class="eyebrow">BAĞIMSIZ HESAPLAMA MODÜLÜ</div>
+            <h2 id="guestWorkspaceTitle">Misafir Hekim</h2>
+            <p class="muted">Tarife ve kayıt altyapısı mevcut ameliyat fiyat listesinden bağımsızdır.</p>
+          </div>
+          <button id="backToPricesButton" class="secondary" type="button">← Fiyat listesine dön</button>
+        </div>
+        <iframe
+          id="guestPhysicianFrame"
+          class="guest-module-frame"
+          title="Misafir Hekim Hesaplama"
+          src="./guest-physician/index.html?embedded=1"
+          loading="lazy"
+        ></iframe>
+      </section>
+    </div>
+  </div>
 </div>
 <script type="module" src="./app.js?v=11"></script>
+<script type="module" src="./main-navigation.js?v=11"></script>
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {

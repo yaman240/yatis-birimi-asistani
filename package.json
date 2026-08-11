@@ -1,0 +1,15 @@
+{
+  "name": "yatis-birimi-asistani",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/calculation-engine.test.js tests/financial-summary.test.js tests/input-validation.test.js tests/real-use-scenarios.test.js tests/repositories.test.js tests/case-workflow.test.js tests/ui-repository-boundary.test.js tests/main-app-integration.test.js tests/guest-physician-ui-regression.test.js tests/visual-hierarchy.test.js tests/print-report.test.js",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-yatis-birimi-asistani \"node --test tests/firestore-rules.test.js\"",
+    "test:staging": "firebase emulators:exec --only firestore --project demo-yatis-birimi-asistani \"node --test tests/firebase-staging-integration.test.js\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.0",
+    "firebase": "^12.0.0",
+    "firebase-tools": "^14.0.0"
+  }
+}
