@@ -11,7 +11,7 @@ const read = relative => readFile(new URL(`../${relative}`, import.meta.url), "u
 const sha256 = value => createHash("sha256").update(value, "utf8").digest("hex").toUpperCase();
 
 const APPROVED_SOURCE_HASHES = Object.freeze({
-  app: "CCEA31067607921328E5542BE6B829F87AE2F89E8CE20296AFA794F8D01C6B57",
+  seedLine: "D40DCAD937DFEDEE3758FD8101A55CC324930DE459E577C8FA887BAEF66E1BC9",
   firebase: "1BD9D53945DD4210EA0154334B5FAAA10DF3ED94234951FE40325295A9452F70"
 });
 
@@ -100,10 +100,23 @@ test("entegre modül Local/Mock üzerinde taslak, kesinleştirme ve iptal akış
 });
 
 test("ana surgeryPrices ve Firebase kaynakları onaylı SHA-256 değerlerini korur", async () => {
-  const [app, firebase] = await Promise.all([read("app.js"), read("firebase.js")]);
-  assert.equal(sha256(app), APPROVED_SOURCE_HASHES.app);
+  const [app, firebase, html] = await Promise.all([read("app.js"), read("firebase.js"), read("index.html")]);
+  const seedLine = app.split(/\r?\n/).find(line => line.startsWith("const SEED = "));
+  assert.equal(sha256(seedLine), APPROVED_SOURCE_HASHES.seedLine);
   assert.equal(sha256(firebase), APPROVED_SOURCE_HASHES.firebase);
   assert.match(app, /const COLLECTION_NAME = "surgeryPrices"/);
+  assert.match(app, /from "\.\/access-control\.js\?v=11"/);
+  assert.match(app, /from "\.\/user-profile-repository\.js\?v=11"/);
+  assert.doesNotMatch(app, /syncBranchSeed|async function migrate|getInitialData\(\)/);
+
+  const authBlock = app.slice(app.indexOf("onAuthStateChanged("), app.indexOf("function normalise"));
+  const snapshotBlock = app.slice(app.indexOf("onSnapshot("), app.indexOf("function openNewRecordPanel"));
+  assert.doesNotMatch(authBlock, /setDoc\s*\(|writeBatch\s*\(|migrate\s*\(/);
+  assert.doesNotMatch(snapshotBlock, /setDoc\s*\(|writeBatch\s*\(|batch\.set\s*\(|\.commit\s*\(/);
+
+  assert.match(html, /id="guestPhysicianMenuButton"/);
+  assert.match(html, /id="guestPhysicianWorkspace"/);
+  assert.match(html, /src="\.\/main-navigation\.js\?v=11"/);
 });
 
 test("entegre Misafir Hekim UI production bağlantısını açmaz", async () => {

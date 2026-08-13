@@ -23,7 +23,8 @@
       </div>
       <div class="auth-actions">
         <button id="newRecordButton" class="primary hidden">➕ Yeni Kayıt</button>
-        <button id="loginButton" class="google-button">🔐 Google ile Yönetici Girişi</button>
+        <button id="loginButton" class="google-button">🔐 Google ile Giriş</button>
+        <button id="userManagementButton" class="secondary hidden" type="button">Kullanıcı Yönetimi</button>
         <button id="logoutButton" class="secondary hidden">Çıkış Yap</button>
       </div>
     </div>
@@ -89,6 +90,21 @@
       </div>
     </div>
   </div>
+  <section id="userManagementPanel" class="box hidden" aria-labelledby="userManagementTitle">
+    <div class="panel-header">
+      <div><div class="eyebrow">SİSTEM YÖNETİMİ</div><h2 id="userManagementTitle">Kullanıcı Yönetimi</h2></div>
+    </div>
+    <p class="muted">Kullanıcı profilleri güvenli <code>users/{uid}</code> kayıtlarından yönetilir. Bu alan yalnız admin rolüne açıktır.</p>
+    <div class="grid user-profile-form">
+      <div><label for="profileUid">Firebase UID</label><input id="profileUid" autocomplete="off"></div>
+      <div><label for="profileEmail">E-posta</label><input id="profileEmail" type="email" autocomplete="off"></div>
+      <div><label for="profileDisplayName">Ad soyad</label><input id="profileDisplayName" autocomplete="off"></div>
+      <div><label for="profileRole">Rol</label><select id="profileRole"><option value="personel">Personel</option><option value="doktor">Doktor</option><option value="idari">İdari</option><option value="admin">Admin</option></select></div>
+      <div class="full check"><input id="profileActive" type="checkbox" checked><label for="profileActive">Kullanıcı aktif</label></div>
+    </div>
+    <div class="actions"><button id="createUserProfileButton" class="primary" type="button">Kullanıcı Profili Oluştur</button></div>
+    <div id="userManagementList" class="user-management-list"></div>
+  </section>
       </div>
 
       <section id="guestPhysicianWorkspace" class="guest-workspace hidden" aria-labelledby="guestWorkspaceTitle">
