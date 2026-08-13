@@ -1,4 +1,5 @@
 import { collection, doc, getDoc, onSnapshot, serverTimestamp, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { requireCorporateEmailAddress } from "./corporate-auth-policy.js";
 
 const COLLECTION_NAME = "pendingUsers";
 const USER_COLLECTION = "users";
@@ -14,7 +15,7 @@ export class PendingUserRepository {
 
   async createForAuthenticatedUser(user) {
     const uid = required(user?.uid, "UID");
-    const email = required(user?.email, "E-posta").toLowerCase();
+    const email = requireCorporateEmailAddress(user?.email);
     const reference = doc(this.db, COLLECTION_NAME, uid);
     if ((await getDoc(reference)).exists()) return false;
     await setDoc(reference, {

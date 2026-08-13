@@ -23,7 +23,19 @@
       </div>
       <div class="auth-actions">
         <button id="newRecordButton" class="primary hidden">➕ Yeni Kayıt</button>
-        <button id="loginButton" class="google-button">🔐 Google ile Giriş</button>
+        <div id="authLoginPanel" class="auth-login-panel">
+          <button id="loginButton" class="google-button" type="button">Google ile Giriş</button>
+          <div class="auth-divider"><span>veya kurumsal hesap</span></div>
+          <form id="emailLoginForm" class="email-login-form">
+            <label for="emailLoginAddress">E-posta</label>
+            <input id="emailLoginAddress" type="email" autocomplete="username" placeholder="ad.soyad@medikent.com.tr" required>
+            <label for="emailLoginPassword">Şifre</label>
+            <input id="emailLoginPassword" type="password" autocomplete="current-password" required>
+            <button id="emailLoginButton" class="primary" type="submit">Giriş Yap</button>
+            <button id="passwordResetButton" class="auth-link-button" type="button">Şifremi Unuttum</button>
+            <div id="emailAuthMessage" class="auth-message" role="status" aria-live="polite"></div>
+          </form>
+        </div>
         <button id="userManagementButton" class="secondary hidden" type="button">Kullanıcı Yönetimi</button>
         <button id="logoutButton" class="secondary hidden">Çıkış Yap</button>
       </div>

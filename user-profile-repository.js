@@ -1,4 +1,5 @@
 import { collection, doc, getDoc, onSnapshot, serverTimestamp, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { requireCorporateEmailAddress } from "./corporate-auth-policy.js";
 
 const COLLECTION_NAME = "users";
 const ROLES = new Set(["admin", "personel", "doktor", "idari"]);
@@ -33,7 +34,7 @@ export class UserProfileRepository {
     if (!ROLES.has(role)) throw new TypeError("Geçersiz kullanıcı rolü.");
     await setDoc(doc(this.db, COLLECTION_NAME, safeUid), {
       uid: safeUid,
-      email: required(email, "E-posta").toLowerCase(),
+      email: role === "admin" ? required(email, "E-posta").toLowerCase() : requireCorporateEmailAddress(email),
       displayName: String(displayName || "").trim(),
       role,
       active: active === true,
