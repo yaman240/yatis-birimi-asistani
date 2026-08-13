@@ -46,7 +46,35 @@
 
     <div class="workspace-shell">
       <div id="pricesWorkspace">
-  <div class="box content-box">
+  <section id="userManagementPanel" class="box user-management-panel hidden" aria-labelledby="userManagementTitle">
+    <div class="panel-header">
+      <div><div class="eyebrow">SİSTEM YÖNETİMİ</div><h2 id="userManagementTitle">Kullanıcı Yönetimi</h2></div>
+      <button id="closeUserManagementButton" class="secondary compact-button" type="button">✕ Kapat</button>
+    </div>
+    <section aria-labelledby="pendingUsersTitle">
+      <h3 id="pendingUsersTitle">Yetki Bekleyen Kullanıcılar</h3>
+      <p class="muted">Google ile giriş yapmış kullanıcıları Personel, Doktor veya İdari rolüyle yetkilendirin.</p>
+      <div id="pendingUserList" class="user-management-list"></div>
+    </section>
+    <details class="manual-user-details">
+      <summary>Gelişmiş / Manuel kullanıcı ekleme</summary>
+      <p class="muted">Yalnız bekleme kaydı oluşturulamayan istisnai durumlarda kullanın.</p>
+      <div class="grid user-profile-form">
+        <div><label for="profileUid">Firebase UID</label><input id="profileUid" autocomplete="off"></div>
+        <div><label for="profileEmail">E-posta</label><input id="profileEmail" type="email" autocomplete="off"></div>
+        <div><label for="profileDisplayName">Ad soyad</label><input id="profileDisplayName" autocomplete="off"></div>
+        <div><label for="profileRole">Rol</label><select id="profileRole"><option value="personel">Personel</option><option value="doktor">Doktor</option><option value="idari">İdari</option></select></div>
+        <div class="full check"><input id="profileActive" type="checkbox" checked><label for="profileActive">Kullanıcı aktif</label></div>
+      </div>
+      <div class="actions"><button id="createUserProfileButton" class="secondary" type="button">Manuel Profil Oluştur</button></div>
+    </details>
+    <section class="existing-users-section" aria-labelledby="existingUsersTitle">
+      <h3 id="existingUsersTitle">Mevcut Kullanıcılar</h3>
+      <div id="userManagementList" class="user-management-list"></div>
+    </section>
+  </section>
+  <div id="authorizationNotice" class="box authorization-notice hidden" role="status"></div>
+  <div id="priceContent" class="box content-box hidden">
     <div class="section-heading">
       <div>
         <div class="eyebrow">HIZLI ARAMA</div>
@@ -90,21 +118,6 @@
       </div>
     </div>
   </div>
-  <section id="userManagementPanel" class="box hidden" aria-labelledby="userManagementTitle">
-    <div class="panel-header">
-      <div><div class="eyebrow">SİSTEM YÖNETİMİ</div><h2 id="userManagementTitle">Kullanıcı Yönetimi</h2></div>
-    </div>
-    <p class="muted">Kullanıcı profilleri güvenli <code>users/{uid}</code> kayıtlarından yönetilir. Bu alan yalnız admin rolüne açıktır.</p>
-    <div class="grid user-profile-form">
-      <div><label for="profileUid">Firebase UID</label><input id="profileUid" autocomplete="off"></div>
-      <div><label for="profileEmail">E-posta</label><input id="profileEmail" type="email" autocomplete="off"></div>
-      <div><label for="profileDisplayName">Ad soyad</label><input id="profileDisplayName" autocomplete="off"></div>
-      <div><label for="profileRole">Rol</label><select id="profileRole"><option value="personel">Personel</option><option value="doktor">Doktor</option><option value="idari">İdari</option><option value="admin">Admin</option></select></div>
-      <div class="full check"><input id="profileActive" type="checkbox" checked><label for="profileActive">Kullanıcı aktif</label></div>
-    </div>
-    <div class="actions"><button id="createUserProfileButton" class="primary" type="button">Kullanıcı Profili Oluştur</button></div>
-    <div id="userManagementList" class="user-management-list"></div>
-  </section>
       </div>
 
       <section id="guestPhysicianWorkspace" class="guest-workspace hidden" aria-labelledby="guestWorkspaceTitle">

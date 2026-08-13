@@ -16,6 +16,12 @@ export class UserProfileRepository {
     return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
   }
 
+  subscribeByUid(uid, listener, onError) {
+    return onSnapshot(doc(this.db, COLLECTION_NAME, required(uid, "UID")), snapshot => {
+      listener(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null);
+    }, onError);
+  }
+
   subscribe(listener, onError) {
     return onSnapshot(collection(this.db, COLLECTION_NAME), snapshot => {
       listener(snapshot.docs.map(item => ({ id: item.id, ...item.data() })));
