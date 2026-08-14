@@ -392,21 +392,9 @@ onAuthStateChanged(auth, async user => {
 
 function openNewRecordPanel() {
   if (!isAdmin) return;
-  const wasHidden = adminPanel.classList.contains("hidden");
   clearForm(false);
   formTitle.textContent = "Yeni Kayıt";
   adminPanel.classList.remove("hidden");
-  const firstField = document.getElementById("clinic");
-
-  if (!wasHidden) {
-    firstField.focus({ preventScroll: true });
-    return;
-  }
-
-  requestAnimationFrame(() => {
-    adminPanel.scrollIntoView({ behavior: "smooth", block: "start" });
-    firstField.focus({ preventScroll: true });
-  });
 }
 
 function closeAdminPanel() {
