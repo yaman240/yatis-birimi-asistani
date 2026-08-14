@@ -35,6 +35,19 @@
             <button id="passwordResetButton" class="auth-link-button" type="button">Şifremi Unuttum</button>
             <div id="emailAuthMessage" class="auth-message" role="status" aria-live="polite"></div>
           </form>
+          <details id="registrationDetails" class="registration-details">
+            <summary>Kurumsal Hesap Oluştur</summary>
+            <form id="registrationForm" class="email-login-form registration-form">
+              <label for="registrationEmail">Kurumsal e-posta</label>
+              <input id="registrationEmail" type="email" inputmode="email" autocomplete="email" placeholder="ad.soyad@medikent.com.tr" required>
+              <label for="registrationPassword">Şifre</label>
+              <input id="registrationPassword" type="password" autocomplete="new-password" minlength="6" required>
+              <label for="registrationPasswordConfirm">Şifre tekrar</label>
+              <input id="registrationPasswordConfirm" type="password" autocomplete="new-password" minlength="6" required>
+              <button id="registrationButton" class="primary" type="submit">Hesap Oluştur</button>
+              <div id="registrationMessage" class="auth-message" role="status" aria-live="polite"></div>
+            </form>
+          </details>
         </div>
         <button id="userManagementButton" class="secondary hidden" type="button">Kullanıcı Yönetimi</button>
         <button id="logoutButton" class="secondary hidden">Çıkış Yap</button>
@@ -63,8 +76,23 @@
       <div><div class="eyebrow">SİSTEM YÖNETİMİ</div><h2 id="userManagementTitle">Kullanıcı Yönetimi</h2></div>
       <button id="closeUserManagementButton" class="secondary compact-button" type="button">✕ Kapat</button>
     </div>
+    <section class="invite-user-section" aria-labelledby="inviteUserTitle">
+      <h3 id="inviteUserTitle">Kullanıcı Davet Et</h3>
+      <p class="muted">Kurumsal e-posta ve rolü önceden belirleyin. Kullanıcı kendi hesabını oluşturduğunda davet güvenli biçimde sahiplenilir.</p>
+      <form id="inviteUserForm" class="invite-user-form">
+        <div><label for="inviteDisplayName">Ad Soyad</label><input id="inviteDisplayName" autocomplete="name" required maxlength="120"></div>
+        <div><label for="inviteEmail">Kurumsal E-posta</label><input id="inviteEmail" type="email" inputmode="email" autocomplete="email" placeholder="ad.soyad@medikent.com.tr" required></div>
+        <div><label for="inviteRole">Rol</label><select id="inviteRole" required><option value="personel">Personel</option><option value="doktor">Doktor</option><option value="idari">İdari</option></select></div>
+        <button id="inviteUserButton" class="primary" type="submit">Davet Oluştur</button>
+      </form>
+      <div id="inviteUserMessage" class="invite-user-message" role="status" aria-live="polite"></div>
+    </section>
+    <section class="invitation-list-section" aria-labelledby="invitationListTitle">
+      <h3 id="invitationListTitle">Bekleyen Davetler</h3>
+      <div id="invitationList" class="user-management-list"></div>
+    </section>
     <section aria-labelledby="pendingUsersTitle">
-      <h3 id="pendingUsersTitle">Yetki Bekleyen Kullanıcılar</h3>
+      <h3 id="pendingUsersTitle">Google ile Yetki Bekleyen Kullanıcılar</h3>
       <p class="muted">Google ile giriş yapmış kullanıcıları Personel, Doktor veya İdari rolüyle yetkilendirin.</p>
       <div id="pendingUserList" class="user-management-list"></div>
     </section>
