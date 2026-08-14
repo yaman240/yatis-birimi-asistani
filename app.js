@@ -392,6 +392,10 @@ onAuthStateChanged(auth, async user => {
 
 function openNewRecordPanel() {
   if (!isAdmin) return;
+  const priceContent = document.getElementById("priceContent");
+  if (adminPanel.nextElementSibling !== priceContent) {
+    priceContent.before(adminPanel);
+  }
   clearForm(false);
   formTitle.textContent = "Yeni Kayıt";
   adminPanel.classList.remove("hidden");
